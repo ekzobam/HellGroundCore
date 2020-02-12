@@ -323,7 +323,14 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recv_data)
         if (!z_show)
             continue;
 
-        std::string pname = itr->second->GetName();
+        std::string pname;
+        if (itr->second->IsGameMaster())
+        {
+            pname = "|cffff0000<GM>|r"; // pname ="|TInterface\\ChatFrame\\UI-ChatIcon-Blizz.blp:0:2:0:-3|t;
+            pname.append(itr->second->GetName());
+        }
+        else
+            pname = itr->second->GetName();
         std::wstring wpname;
         if (!Utf8toWStr(pname, wpname))
             continue;
