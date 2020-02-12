@@ -747,6 +747,11 @@ ChatCommand* ChatHandler::getCommandTable()
     return commandTable;
 }
 
+std::string ChatHandler::GetNameLink(Player* chr) const
+{
+    return playerLink(chr->GetName());
+}
+
 const char* ChatHandler::GetOregonString(int32 entry) const
 {
     return m_session->GetOregonString(entry);
@@ -1911,6 +1916,11 @@ void CliHandler::SendSysMessage(const char* str)
 {
     m_print(m_callbackArg, str);
     m_print(m_callbackArg, "\n");
+}
+
+std::string CliHandler::GetNameLink() const
+{
+    return GetOregonString(LANG_CONSOLE_COMMAND);
 }
 
 const char* CliHandler::GetName() const
