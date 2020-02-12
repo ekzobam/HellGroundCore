@@ -266,8 +266,17 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
 
             if (!player || (lang != LANG_ADDON && tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !player->isAcceptWhispers()))
             {
-                SendPlayerNotFoundNotice(to);
-                return;
+                // If Fake WHO List system on then show player DND
+                if (sWorld.getConfig(CONFIG_FAKE_WHO_LIST))
+                {
+                    ChatHandler(this).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
+                    return;
+                }
+                else
+                {
+                    SendPlayerNotFoundNotice(to);
+                    return;
+                }
             }
 
             if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && tSecurity == SEC_PLAYER && pSecurity == SEC_PLAYER)

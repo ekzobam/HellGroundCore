@@ -280,8 +280,7 @@ void Console::MainLoop()
         // draw info
         enum InfoValue
         {
-            INFO_EMPTY,
-
+            INFO_PLAYERS_FAKE,
             INFO_PLAYERS_ONLINE,
             INFO_PLAYERS_QUEUED,
             INFO_PLAYERS_MAX,
@@ -304,7 +303,7 @@ void Console::MainLoop()
             { 0,    0,    "Players:",    INFO_PLAYERS_ONLINE },
             { 1,    0,    "        ",    INFO_PLAYERS_QUEUED },
             { 2,    0,    "        ",    INFO_PLAYERS_MAX,   },
-            { 3,    0,    "        ",    INFO_EMPTY,         },
+            { 3,    0,    "        ",    INFO_PLAYERS_FAKE,  },
 
             { 0,   34,    "Revision:",   INFO_REVISION,      },
             { 1,   34,    "LogMask:",    INFO_LOGMASK,      },
@@ -328,6 +327,9 @@ void Console::MainLoop()
                 break;
             case INFO_PLAYERS_MAX:
                 wprintw(infoWindow, " %u (max)", sWorld.GetMaxActiveSessionCount() + sWorld.GetMaxQueuedSessionCount());
+                break;
+            case INFO_PLAYERS_FAKE:
+                wprintw(infoWindow, " %u (fake)", sWorld.GetFakeActiveSessionCount());
                 break;
             case INFO_REVISION:
                 wprintw(infoWindow, " %s", _REVISION);

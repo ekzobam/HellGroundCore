@@ -1088,6 +1088,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_LOG_EXTENDED_INFO] = sConfig.GetBoolDefault("ArenaLogExtendedInfo", false);
     m_configs[CONFIG_WARSONG_TIMER] = sConfig.GetBoolDefault("WarsongTimer.Enabled", true);
     m_configs[CONFIG_BG_XP_FOR_KILL] = sConfig.GetBoolDefault("Battleground.GiveXPForKills", false);
+    m_configs[CONFIG_FAKE_WHO_LIST] = sConfig.GetBoolDefault("Fake.WHO.List", false);
+    m_configs[CONFIG_FAKE_WHO_ONLINE_INTERVAL] = sConfig.GetIntDefault("Fake.Who.Online.Interval", 5);
+    m_configs[CONFIG_FAKE_WHO_LEVELUP_INTERVAL] = sConfig.GetIntDefault("Fake.Who.LevelUp.Interval", 2);
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);
@@ -2730,6 +2733,20 @@ void World::SendAutoBroadcast()
     }
 
     sLog.outString("AutoBroadcast: '%s'", msg.c_str());
+}
+
+uint32 World::GetFakeActiveSessionCount()
+{
+    QueryResult_AutoPtr fakeresult = CharacterDatabase.PQuery("SELECT COUNT(name) FROM character_fake WHERE HOUR(online) BETWEEN HOUR(NOW()) AND HOUR(NOW()) + %u", sWorld.getConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL));
+
+    if (fakeresult)
+    {
+        Field* fields = fakeresult->Fetch();
+        uint32 fakecount = fields[0].GetUInt32();
+        return fakecount;
+    }
+    else
+        return 0;
 }
 
 void World::InvalidatePlayerDataToAllClient(uint64 guid) const

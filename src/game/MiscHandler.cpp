@@ -185,6 +185,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recv_data)
     uint32 zoneids[10];                                     // 10 is client limit
     std::string player_name, guild_name;
 
+    bool searchBool = false;
+    std::string searchName;
+
     recv_data >> level_min;                                 // maximal player level, default 0
     recv_data >> level_max;                                 // minimal player level, default 100 (MAX_LEVEL)
     recv_data >> player_name;                               // player name, case sensitive...
@@ -223,6 +226,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recv_data)
             continue;
 
         wstrToLower(str[i]);
+
+        searchBool = true;
+        searchName = temp.c_str();
 
         DEBUG_LOG("String %u: %s", i, temp.c_str());
     }
@@ -373,7 +379,46 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recv_data)
         ++displaycount;
     }
 
-    data.put(0, displaycount);                             // insert right count, count of matches
+    if (sWorld.getConfig(CONFIG_FAKE_WHO_LIST) && displaycount < sWorld.getConfig(CONFIG_MAX_WHO))
+    {
+        QueryResult_AutoPtr fakeresult;
+        //or QueryResult_AutoPtr fakeresult = NULL;
+
+        /*if(searchBool)
+            fakeresult = CharacterDatabase.PQuery("SELECT name,race,class,level,zone,gender FROM characters_fake WHERE HOUR(online) BETWEEN HOUR(NOW()) AND HOUR(NOW()) + %u AND name LIKE %", sWorld.getConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL), searchName);
+        else*/
+            fakeresult = CharacterDatabase.PQuery("SELECT name,race,class,level,zone,gender FROM character_fake WHERE HOUR(online) BETWEEN HOUR(NOW()) AND HOUR(NOW()) + %u", sWorld.getConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL));
+
+        if (fakeresult)
+        {
+            do
+            {
+                Field* fields = fakeresult->Fetch();
+
+                std::string pname = fields[0].GetString();  // player name
+                std::string gname;                          // guild name
+                uint32 lvl = fields[3].GetUInt32();         // player level
+                uint32 class_ = fields[2].GetUInt32();      // player class
+                uint32 race = fields[1].GetUInt32();        // player race
+                uint32 pzoneid = fields[4].GetUInt32();     // player zone id
+                uint8 gender = fields[5].GetUInt8();        // player gender
+
+                data << pname;                              // player name
+                data << gname;                              // guild name
+                data << uint32(lvl);                        // player level
+                data << uint32(class_);                     // player class
+                data << uint32(race);                       // player race
+                data << uint8(gender);                      // player gender
+                data << uint32(pzoneid);                    // player zone id
+
+                if ((++matchcount) == sWorld.getConfig(CONFIG_MAX_WHO))
+                    break;
+            } while (fakeresult->NextRow());
+        }
+    }
+
+    data.put(0, matchcount);
+    //data.put(0, displaycount);                             // insert right count, count of matches
     data.put(4, matchcount);                               // insert right count, count displayed
 
     SendPacket(&data);
@@ -566,6 +611,24 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recv_data)
     DEBUG_LOG("WORLD: %s asked to add friend : '%s'",
               GetPlayer()->GetName(), friendName.c_str());
 
+    if (sWorld.getConfig(CONFIG_FAKE_WHO_LIST))
+    {
+        QueryResult_AutoPtr fakeresult = CharacterDatabase.PQuery("SELECT race FROM character_fake WHERE name = %s", friendName);
+
+        if (fakeresult)
+        {
+            Field* fields = fakeresult->Fetch();
+            uint32 team = Player::TeamForRace(fields[0].GetUInt8());
+
+            if (GetPlayer()->GetTeam() != team && !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && GetSecurity() < SEC_MODERATOR)
+                sSocialMgr.SendFriendStatus(GetPlayer(), FRIEND_ENEMY, false, false);
+            else
+                ChatHandler(_player->GetSession()).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
+
+            return;
+        }
+    }
+
     CharacterDatabase.AsyncPQuery(&WorldSession::HandleAddFriendOpcodeCallBack, GetAccountId(), friendNote, "SELECT guid, race, account FROM characters WHERE name = '%s'", friendName.c_str());
 }
 
@@ -653,6 +716,17 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPacket& recv_data)
 
     DEBUG_LOG("WORLD: %s asked to Ignore: '%s'",
               GetPlayer()->GetName(), IgnoreName.c_str());
+
+    if (sWorld.getConfig(CONFIG_FAKE_WHO_LIST))
+    {
+        QueryResult_AutoPtr fakeresult = CharacterDatabase.PQuery("SELECT race FROM character_fake WHERE HOUR(online) BETWEEN HOUR(NOW()) AND HOUR(NOW()) + %u) AND name = %s", sWorld.getConfig(CONFIG_FAKE_WHO_ONLINE_INTERVAL), IgnoreName.c_str());
+
+        if (fakeresult)
+        {
+            ChatHandler(_player->GetSession()).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
+            return;
+        }
+    }
 
     CharacterDatabase.AsyncPQuery(&WorldSession::HandleAddIgnoreOpcodeCallBack, GetAccountId(), "SELECT guid FROM characters WHERE name = '%s'", IgnoreName.c_str());
 }

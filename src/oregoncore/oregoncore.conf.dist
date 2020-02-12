@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2015071262
+ConfVersion=2020021201
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2138,3 +2138,17 @@ DatabaseUpdater.ModPathToUpdates = ""
 WarsongTimer.Enabled = 0
 CreateUpdateFile.Enabled = 0
 Console.RestartTimer = 10
+
+###############################################################################
+#    HELLGROUND CUSTOM
+#
+#    Fake.WHO.List
+#        Add fake players to fill in WHO LIST (who is online list, "O" button) if there is less then
+#        49 real players online (need to set online=2 in character database in order to work)
+#        Default: 0 (disabled)
+#                 1 (enabled)
+#
+###############################################################################
+Fake.Who.List = 0
+Fake.Who.Online.Interval = 5
+Fake.Who.LevelUp.Interval = 2
