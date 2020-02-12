@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2020021204
+ConfVersion=2020021205
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2168,6 +2168,11 @@ Console.RestartTimer = 10
 #        Default: 0 (disabled)
 #                 1 (enabled)
 #
+#   DuelRewardSpellCast
+#       Cast spell on the winner of duel.
+#       Default: 0 (Disabled)
+#                41232 - Spell
+#
 ###############################################################################
 Fake.Who.List = 0
 Fake.Who.Online.Interval = 5
@@ -2176,3 +2181,4 @@ Antifarm.Honor = 0
 GMIsland.PlayersAccess.Enable = 1
 GMIsland.Ban.Enable = 0
 ServerInfo.Full = 0
+DuelRewardSpellCast = 41232

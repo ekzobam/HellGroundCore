@@ -1199,6 +1199,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             he->duel->opponent->CombatStopWithPets(true);
             he->CombatStopWithPets(true);
 
+            if (sWorld.getConfig(CONFIG_DUEL_REWARD_SPELL_CAST) > 0)
+                he->duel->opponent->CastSpell(he, sWorld.getConfig(CONFIG_DUEL_REWARD_SPELL_CAST), true);
+
             he->CastSpell(he, 7267, true);                  // beg
             he->DuelComplete(DUEL_WON);
         }
