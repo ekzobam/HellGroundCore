@@ -1094,6 +1094,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ANTIFARM_HONOR] = sConfig.GetBoolDefault("Antifarm.Honor", false);
     m_configs[CONFIG_GMISLAND_PLAYERS_ACCESS_ENABLE] = sConfig.GetBoolDefault("GMIsland.PlayersAccess.Enable", true);
     m_configs[CONFIG_GMISLAND_BAN_ENABLE] = sConfig.GetBoolDefault("GMIsland.Ban.Enable", false);
+    m_configs[CONFIG_SERVER_INFO_FULL] = sConfig.GetBoolDefault("ServerInfo.Full", false);
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);

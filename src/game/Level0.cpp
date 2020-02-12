@@ -95,17 +95,23 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     std::string str = secsToTimeString(sWorld.GetUptime());
     uint32 updateTime = sWorld.GetUpdateTime();
 
-    PSendSysMessage(_FULLVERSION);
-    //if (m_session)
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,"|cffffffff|Hurl:" REVISION_ID "|h" REVISION_ID "|h|r");
-    //else
-    //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_ID);
+    PSendSysMessage("--- www.hellground.ru ---");
+    if(sWorld.getConfig(CONFIG_SERVER_INFO_FULL))
+    {
+        PSendSysMessage("---> Full Info");
+        PSendSysMessage(_FULLVERSION);
+        //if (m_session)
+        //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,"|cffffffff|Hurl:" REVISION_ID "|h" REVISION_ID "|h|r");
+        //else
+        //    full = _FULLVERSION(REVISION_DATE,REVISION_TIME,REVISION_ID);
 
-    //SendSysMessage(full);
-    //PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
+        //SendSysMessage(full);
+        PSendSysMessage(LANG_USING_WORLD_DB,sWorld.GetDBVersion());
+        PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
+    }
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage(LANG_UPDATE_DIFF, updateTime);
+    PSendSysMessage("--- HellGround ---");
     //! Can't use sWorld->ShutdownMsg here in case of console command
     if (sWorld.IsShuttingDown())
         PSendSysMessage(LANG_SHUTDOWN_TIMELEFT, secsToTimeString(sWorld.GetShutDownTimeLeft()).c_str());

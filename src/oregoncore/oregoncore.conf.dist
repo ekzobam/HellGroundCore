@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2020021203
+ConfVersion=2020021204
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2163,6 +2163,11 @@ Console.RestartTimer = 10
 #        Default: 0 - Выключено
 #                 1 - Включено
 #
+#    ServerInfo.Full
+#        Если опция включена, при использовании команды .server info показывает полную информацию сервера
+#        Default: 0 (disabled)
+#                 1 (enabled)
+#
 ###############################################################################
 Fake.Who.List = 0
 Fake.Who.Online.Interval = 5
@@ -2170,3 +2175,4 @@ Fake.Who.LevelUp.Interval = 2
 Antifarm.Honor = 0
 GMIsland.PlayersAccess.Enable = 1
 GMIsland.Ban.Enable = 0
+ServerInfo.Full = 0
