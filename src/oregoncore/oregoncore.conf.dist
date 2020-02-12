@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2020021205
+ConfVersion=2020021206
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2173,6 +2173,11 @@ Console.RestartTimer = 10
 #       Default: 0 (Disabled)
 #                41232 - Spell
 #
+#	Ignore.Combat.toEnterInst
+#		Позволяет войти в инст, когда висит агро на персонаже		
+#		Default: 0 - Запретить вход (Blizzlike)
+#				 1 - Войти в инст с агро
+#
 ###############################################################################
 Fake.Who.List = 0
 Fake.Who.Online.Interval = 5
@@ -2182,3 +2187,4 @@ GMIsland.PlayersAccess.Enable = 1
 GMIsland.Ban.Enable = 0
 ServerInfo.Full = 0
 DuelRewardSpellCast = 41232
+Ignore.Combat.toEnterInst = 0

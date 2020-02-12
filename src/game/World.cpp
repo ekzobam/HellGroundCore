@@ -1098,6 +1098,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DUEL_REWARD_SPELL_CAST] = sConfig.GetIntDefault("DuelRewardSpellCast", 0);
         if(m_configs[CONFIG_DUEL_REWARD_SPELL_CAST] < 0)
             m_configs[CONFIG_DUEL_REWARD_SPELL_CAST]= 0;
+    m_configs[CONFIG_IGNORE_COMBAT_TO_ENTER_INST]  = sConfig.GetBoolDefault("Ignore.Combat.toEnterInst", false);
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);

@@ -173,6 +173,15 @@ Map::EnterState MapManager::PlayerCannotEnter(uint32 mapid, Player* player, bool
 
     const char* mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
 
+    if(!sWorld.getConfig(CONFIG_IGNORE_COMBAT_TO_ENTER_INST))
+    {
+        if(player->IsInCombat() && entry->IsDungeon())
+        {
+            player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetOregonString(23), mapName);
+            return Map::CANNOT_ENTER_UNSPECIFIED_REASON;
+        }
+    }
+
     Group* group = player->GetGroup();
     if (entry->IsRaid()) // can only enter in a raid group
         if ((!group || !group->isRaidGroup()) && !sWorld.getConfig(CONFIG_INSTANCE_IGNORE_RAID))
