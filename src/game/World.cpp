@@ -1091,6 +1091,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_FAKE_WHO_LIST] = sConfig.GetBoolDefault("Fake.WHO.List", false);
     m_configs[CONFIG_FAKE_WHO_ONLINE_INTERVAL] = sConfig.GetIntDefault("Fake.Who.Online.Interval", 5);
     m_configs[CONFIG_FAKE_WHO_LEVELUP_INTERVAL] = sConfig.GetIntDefault("Fake.Who.LevelUp.Interval", 2);
+    m_configs[CONFIG_ANTIFARM_HONOR] = sConfig.GetBoolDefault("Antifarm.Honor", false);
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);

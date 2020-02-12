@@ -1,0 +1,2 @@
+INSERT INTO `oregon_string` VALUES 
++(12001,'|cff0077ee[HellGround]|r Please, close the other sessions...',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'|cff0077ee[HellGround]|r Пожалуйста закройте другие сессии WoW, иначе не получите очки чести.');

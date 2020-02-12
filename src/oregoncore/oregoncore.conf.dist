@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2020021201
+ConfVersion=2020021202
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2148,7 +2148,12 @@ Console.RestartTimer = 10
 #        Default: 0 (disabled)
 #                 1 (enabled)
 #
+#    Antifarm Honor
+#        Check in PVP. If IP is equally - is no honor give.
+#        Default: 0 - disabled
+#
 ###############################################################################
 Fake.Who.List = 0
 Fake.Who.Online.Interval = 5
 Fake.Who.LevelUp.Interval = 2
+Antifarm.Honor = 0

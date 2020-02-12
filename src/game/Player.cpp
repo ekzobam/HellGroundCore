@@ -6225,6 +6225,18 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, float honor, bool pvpt
         {
             Player* victim = uVictim->ToPlayer();
 
+            if(sWorld.getConfig(CONFIG_ANTIFARM_HONOR))
+            {
+                std::string uAddress = GetSession()->GetRemoteAddress();
+                std::string pAddress = victim->GetSession()->GetRemoteAddress();
+
+                if (uAddress == pAddress)
+                {
+                    ChatHandler(this).PSendSysMessage(LANG_ANTIFARM_HONOR);
+                    return false;
+                }
+            }
+
             if (GetTeam() == victim->GetTeam() && !sWorld.IsFFAPvPRealm())
                 return false;
 

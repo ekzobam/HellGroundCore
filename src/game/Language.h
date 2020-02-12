@@ -941,6 +941,7 @@ enum OregonStrings
     LANG_INSTANCE_BIND_MISMATCH         = 11014,
     // NOT RESERVED IDS                   12000-1999999999
     LANG_FAKE_NOT_DISTURB               = 12000,              // Fake Players
+    LANG_ANTIFARM_HONOR                 = 12001,              // Antifarm Honor points
     // `db_script_string` table index     2000000000-2000009999 (MIN_DB_SCRIPT_STRING_ID-MAX_DB_SCRIPT_STRING_ID)
     // For other tables maybe             2000010000-2147483647 (max index)
 };
