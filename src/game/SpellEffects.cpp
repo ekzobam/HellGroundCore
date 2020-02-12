@@ -6047,6 +6047,13 @@ void Spell::EffectStuck(SpellEffIndex /*effIndex*/)
     if (!pTarget)
         return;
 
+    // Prevent players from trying to unstuck themselves in the Jail box.
+    if (pTarget->GetMapId() == 13 && pTarget->GetSession()->GetSecurity() == SEC_PLAYER)
+    {
+        sLog.outError("Character %s (guid %u) tried to use unstuck in Jail box.", pTarget->GetName(), pTarget->GetGUIDLow());
+        return;
+    }
+
     DEBUG_LOG("Spell Effect: Stuck");
     sLog.outDetail("Player %s (guid %u) used auto-unstuck feature at map %u (%f, %f, %f)", pTarget->GetName(), pTarget->GetGUIDLow(), m_caster->GetMapId(), m_caster->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ());
 

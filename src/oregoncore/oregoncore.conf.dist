@@ -3,7 +3,7 @@
 ###############################################
 
 [worldserver]
-ConfVersion=2020021202
+ConfVersion=2020021203
 
 # Note to devs, line breaks should be at column 80
 ###############################################################################
@@ -2152,8 +2152,21 @@ Console.RestartTimer = 10
 #        Check in PVP. If IP is equally - is no honor give.
 #        Default: 0 - disabled
 #
+#    GMIsland.PlayersAccess.Enable
+#        Если персонаж не имеющий прав доступа, попал на ГМ остров, эта опция телепортирует
+#        его в тюрьму и заморозит персонажа
+#        Default: 0 - Выключено
+#                 1 - Включено
+#
+#    GMIsland.Ban.Enable
+#        Банить или нет персонажей, появившихся на ГМ острове без прав доступа
+#        Default: 0 - Выключено
+#                 1 - Включено
+#
 ###############################################################################
 Fake.Who.List = 0
 Fake.Who.Online.Interval = 5
 Fake.Who.LevelUp.Interval = 2
 Antifarm.Honor = 0
+GMIsland.PlayersAccess.Enable = 1
+GMIsland.Ban.Enable = 0

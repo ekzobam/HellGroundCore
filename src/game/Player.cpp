@@ -6491,6 +6491,24 @@ void Player::UpdateZone(uint32 newZone)
     // zone changed, so area changed as well, update it
     UpdateArea(GetAreaId());
 
+    // Prevent players from accessing GM Island
+    if (sWorld.getConfig(CONFIG_GMISLAND_PLAYERS_ACCESS_ENABLE))
+    {
+        if (newZone == 876 && GetSession()->GetSecurity() == SEC_PLAYER)
+        {
+            sLog.outError("Player (GUID: %u) tried to access GM Island.", GetGUIDLow());
+            sLog.outError("Sending possible hacker to default location. (Jail Box)");
+            TeleportTo(13,1.118799,0.477914,-144.708650,3.133046); // Tele to Jail Box
+            CastSpell(this, 9454, true); // Cast GM Freeze on player
+
+            if (sWorld.getConfig(CONFIG_GMISLAND_BAN_ENABLE))
+             {
+                sLog.outError("Player (GUID: %u) tried to access GM Island. Banning Player Account.", GetGUIDLow());
+                sWorld.BanAccount(BAN_ACCOUNT, this->GetName(),secsToTimeString(TimeStringToSecs("-1"),true).c_str(),"Being on GM Island","Anticheat protection");
+            }
+        }
+    }
+
     AreaTableEntry const* zone = GetAreaEntryByAreaID(newZone);
     if (!zone)
         return;

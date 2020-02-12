@@ -1092,6 +1092,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_FAKE_WHO_ONLINE_INTERVAL] = sConfig.GetIntDefault("Fake.Who.Online.Interval", 5);
     m_configs[CONFIG_FAKE_WHO_LEVELUP_INTERVAL] = sConfig.GetIntDefault("Fake.Who.LevelUp.Interval", 2);
     m_configs[CONFIG_ANTIFARM_HONOR] = sConfig.GetBoolDefault("Antifarm.Honor", false);
+    m_configs[CONFIG_GMISLAND_PLAYERS_ACCESS_ENABLE] = sConfig.GetBoolDefault("GMIsland.PlayersAccess.Enable", true);
+    m_configs[CONFIG_GMISLAND_BAN_ENABLE] = sConfig.GetBoolDefault("GMIsland.Ban.Enable", false);
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);
