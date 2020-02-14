@@ -481,6 +481,7 @@ bool ChatHandler::HandleReloadAllCommand(const char*)
     HandleReloadOregonStringCommand("");
     HandleReloadGameTeleCommand("");
     HandleReloadAutobroadcastCommand("");
+    HandleReloadMailLevelRewardCommand("");
     return true;
 }
 
@@ -1199,6 +1200,14 @@ bool ChatHandler::HandleReloadLocalesQuestCommand(const char* /*arg*/)
     sLog.outString("Re-Loading Locales Quest ... ");
     sObjectMgr.LoadQuestLocales();
     SendGlobalGMSysMessage("DB table locales_quest reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadMailLevelRewardCommand(const char* /*arg*/)
+{
+    sLog.outString("Re-Loading Player level dependent mail rewards...");
+    sObjectMgr.LoadMailLevelRewards();
+    SendGlobalGMSysMessage("DB table `mail_level_reward` reloaded.");
     return true;
 }
 

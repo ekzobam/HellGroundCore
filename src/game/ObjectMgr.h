@@ -399,6 +399,19 @@ struct PetLevelInfo
     uint16 armor;
 };
 
+struct MailLevelReward
+{
+    MailLevelReward() : raceMask(0), mailTemplateId(0), senderEntry(0) {}
+    MailLevelReward(uint32 raceMask, uint32 mailTemplateId, uint32 senderEntry) : raceMask(raceMask), mailTemplateId(mailTemplateId), senderEntry(senderEntry) {}
+
+    uint32 raceMask;
+    uint32 mailTemplateId;
+    uint32 senderEntry;
+};
+
+typedef std::list<MailLevelReward> MailLevelRewardList;
+typedef UNORDERED_MAP<uint8, MailLevelRewardList> MailLevelRewardContainer;
+
 struct ReputationOnKillEntry
 {
     uint32 repfaction1;
@@ -833,6 +846,7 @@ class ObjectMgr
         void LoadPageTextLocales();
         void LoadGossipMenuItemsLocales();
         void LoadInstanceTemplate();
+        void LoadMailLevelRewards();
 
         void LoadGossipText();
 
@@ -902,6 +916,18 @@ class ObjectMgr
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         ExclusiveQuestGroups mExclusiveQuestGroups;
 
+        MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask)
+        {
+            MailLevelRewardContainer::const_iterator map_itr = mailLevelRewardStore.find(level);
+            if (map_itr == mailLevelRewardStore.end())
+                return NULL;
+
+            for (MailLevelRewardList::const_iterator set_itr = map_itr->second.begin(); set_itr != map_itr->second.end(); ++set_itr)
+                if (set_itr->raceMask & raceMask)
+                    return &*set_itr;
+
+            return NULL;
+        }
 
         /**
         * Gets temp summon data for all creatures of specified group.
@@ -1237,6 +1263,8 @@ class ObjectMgr
         typedef std::map<uint32, PetLevelInfo*> PetLevelInfoMap;
         // PetLevelInfoMap[creature_id][level]
         PetLevelInfoMap petInfo;                            // [creature_id][level]
+
+        MailLevelRewardContainer mailLevelRewardStore;
 
         PlayerClassInfo playerClassInfo[MAX_CLASSES];
 

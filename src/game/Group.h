@@ -525,4 +525,3 @@ class Group
 
 #define sScriptMgr Oregon::Singleton<ScriptMgr>::Instance()
 #endif
-

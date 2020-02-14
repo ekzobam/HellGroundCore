@@ -310,6 +310,7 @@ class ChatHandler
         bool HandleReloadLocalesNpcTextCommand(const char* args);
         bool HandleReloadLocalesPageTextCommand(const char* args);
         bool HandleReloadLocalesQuestCommand(const char* args);
+        bool HandleReloadMailLevelRewardCommand(const char* args);
         bool HandleReloadAuctionsCommand(const char* args);
         bool HandleReloadConditions(const char* args);
 

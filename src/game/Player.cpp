@@ -2708,6 +2708,12 @@ void Player::GiveLevel(uint32 level, bool ignoreRAF)
     if (pet && pet->getPetType() == SUMMON_PET)
         pet->GivePetLevel(level);
 
+    if (MailLevelReward const* mailReward = sObjectMgr.GetMailLevelReward(level, getRaceMask()))
+    {
+        //- TODO: Poor design of mail system
+        MailDraft(mailReward->mailTemplateId).SendMailTo(this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
+    }
+
     if (!ignoreRAF && sObjectMgr.GetRAFLinkStatus(this) == RAF_LINK_REFERRED)
         while (diff-- > 0)
             SetGrantableLevels(GetGrantableLevels() + sWorld.getRate(RATE_RAF_GRANTABLE_LEVELS_PER_LEVEL));

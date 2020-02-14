@@ -1652,6 +1652,9 @@ void World::SetInitialWorldSettings()
     sConsole.SetLoadingLabel("Loading Player Corpses...");
     sObjectMgr.LoadCorpses();
 
+    sConsole.SetLoadingLabel("Loading Player level dependent mail rewards...");
+    sObjectMgr.LoadMailLevelRewards();
+
     sConsole.SetLoadingLabel("Loading Loot Tables...");
     LoadLootTables();
 

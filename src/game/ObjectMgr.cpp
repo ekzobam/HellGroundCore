@@ -7114,6 +7114,67 @@ bool ObjectMgr::DeleteGameTele(const std::string& name)
     return false;
 }
 
+void ObjectMgr::LoadMailLevelRewards()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mailLevelRewardStore.clear();                           // for reload case
+
+    //                                                       0      1         2               3
+    QueryResult_AutoPtr result = WorldDatabase.Query("SELECT level, raceMask, mailTemplateId, senderEntry FROM mail_level_reward");
+
+    if (!result)
+    {
+        sLog.outErrorDb(">> Loaded 0 level dependent mail rewards. DB table `mail_level_reward` is empty.");
+        sLog.outString();
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint8 level           = fields[0].GetUInt8();
+        uint32 raceMask       = fields[1].GetUInt32();
+        uint32 mailTemplateId = fields[2].GetUInt32();
+        uint32 senderEntry    = fields[3].GetUInt32();
+
+        if (level > MAX_LEVEL)
+        {
+            sLog.outErrorDb("Table `mail_level_reward` have data for level %u that more supported by client (%u), ignoring.", level, MAX_LEVEL);
+            continue;
+        }
+
+        if (!(raceMask & RACEMASK_ALL_PLAYABLE))
+        {
+            sLog.outErrorDb("Table `mail_level_reward` have raceMask (%u) for level %u that not include any player races, ignoring.", raceMask, level);
+            continue;
+        }
+
+        if (!sMailTemplateStore.LookupEntry(mailTemplateId))
+        {
+            sLog.outErrorDb("Table `mail_level_reward` have invalid mailTemplateId (%u) for level %u that invalid not include any player races, ignoring.", mailTemplateId, level);
+            continue;
+        }
+
+        if (!GetCreatureTemplate(senderEntry))
+        {
+            sLog.outErrorDb("Table `mail_level_reward` have not existed sender creature entry (%u) for level %u that invalid not include any player races, ignoring.", senderEntry, level);
+            continue;
+        }
+
+        mailLevelRewardStore[level].push_back(MailLevelReward(raceMask, mailTemplateId, senderEntry));
+
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog.outString(">> Loaded %u level dependent mail rewards in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog.outString();
+}
+
 void ObjectMgr::LoadTrainerSpell()
 {
     // For reload case
