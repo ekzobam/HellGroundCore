@@ -37,6 +37,7 @@ class ChatCommand
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
         ChatCommand*       ChildCommands;
+        uint32             GroupAllowMask;
 };
 
 class ChatHandler
@@ -99,8 +100,8 @@ class ChatHandler
         void SendGlobalSysMessage(const char* str);
         void SendGlobalGMSysMessage(const char* str);
 
-        bool ExecuteCommandInTables(std::vector<ChatCommand*>& tables, const char* text, const std::string& fullcmd);
-        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd);
+        bool ExecuteCommandInTables(std::vector<ChatCommand*>& tables, const char* text, const std::string& fullcmd, uint32 groupAllowMask);
+        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd, uint32 groupAllowMask);
         bool ShowHelpForCommand(ChatCommand* table, const char* cmd);
         bool ShowHelpForSubCommands(ChatCommand* table, char const* cmd, char const* subcmd);
 

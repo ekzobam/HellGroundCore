@@ -67,7 +67,7 @@ class WorldSession
 {
         friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, WorldSocket* sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale);
+        WorldSession(uint32 id, WorldSocket* sock, uint32 sec, uint32 groups, uint8 expansion, time_t mute_time, LocaleConstant locale);
         ~WorldSession();
 
         bool PlayerLoading() const
@@ -97,6 +97,10 @@ class WorldSession
         {
             return _security;
         }
+        uint32 GetSecurityGroups() const 
+        { 
+            return _groups; 
+        }
         uint32 GetAccountId() const
         {
             return _accountId;
@@ -109,6 +113,10 @@ class WorldSession
         void SetSecurity(uint32 security)
         {
             _security = security;
+        }
+        void SetSecurityGroups(uint32 groups) 
+        { 
+            _groups = groups; 
         }
         std::string const& GetRemoteAddress()
         {
@@ -733,6 +741,7 @@ class WorldSession
         std::string m_Address;
 
         uint32 _security;
+        uint32 _groups;
         uint32 _accountId;
         uint8 m_expansion;
 

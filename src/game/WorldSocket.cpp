@@ -650,6 +650,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     uint32 unk2;
     uint32 BuiltNumberClient;
     uint32 id, security;
+    uint32 groups;
     //uint8 expansion = 0;
     LocaleConstant locale;
     std::string account;
@@ -783,6 +784,24 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         security = fields[1].GetInt32();
     }
 
+    //groups
+    QueryResult_AutoPtr groupresult =
+        LoginDatabase.PQuery ("SELECT "
+                              "RealmID, "            //0
+                              "groups "             //1
+                              "FROM account_groups "
+                              "WHERE id = '%d'"
+                              " AND (RealmID = '%d'"
+                              " OR RealmID = '-1')",
+                              id, realmID);
+    if (!groupresult)
+        groups = 0;
+    else
+    {
+        fields = groupresult->Fetch();
+        groups = fields[1].GetUInt32();
+    }
+
     // Re-check account ban (same check as in realmd)
     QueryResult_AutoPtr banresult = LoginDatabase.PQuery ("SELECT "
                                     "bandate, "
@@ -858,7 +877,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             safe_account.c_str());
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
-    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale), -1);
+    ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, groups, expansion, mutetime, locale), -1);
 
     m_Crypt.SetKey(&K);
     m_Crypt.Init();
