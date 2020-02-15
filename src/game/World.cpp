@@ -1099,6 +1099,18 @@ void World::LoadConfigSettings(bool reload)
         if(m_configs[CONFIG_DUEL_REWARD_SPELL_CAST] < 0)
             m_configs[CONFIG_DUEL_REWARD_SPELL_CAST]= 0;
     m_configs[CONFIG_IGNORE_COMBAT_TO_ENTER_INST]  = sConfig.GetBoolDefault("Ignore.Combat.toEnterInst", false);
+    rate_values[RATE_PVP_RANK_EXTRA_HONOR] = sConfig.GetFloatDefault("PvPRank.Rate.ExtraHonor", 1);
+    std::string s_pvp_ranks = sConfig.GetStringDefault("PvPRank.HKPerRank", "10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000");
+    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
+    for (int i = 0; i !=HKRANKMAX; i++)
+    {
+        if(i==0)
+            pvp_ranks[0] = 0;
+        else if(i==1)
+            pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
+        else
+            pvp_ranks[i] = atoi(strtok (NULL, ","));
+    }
 
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);

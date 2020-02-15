@@ -279,6 +279,26 @@ enum WorldConfigs
     CONFIG_VALUE_COUNT
 };
 
+enum HonorKillPvPRank
+{
+    HKRANK00,
+    HKRANK01,
+    HKRANK02,
+    HKRANK03,
+    HKRANK04,
+    HKRANK05,
+    HKRANK06,
+    HKRANK07,
+    HKRANK08,
+    HKRANK09,
+    HKRANK10,
+    HKRANK11,
+    HKRANK12,
+    HKRANK13,
+    HKRANK14,
+    HKRANKMAX
+};
+
 // Server rates
 enum Rates
 {
@@ -641,6 +661,8 @@ class World
         bool SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
         void SendZoneText(uint32 zone, const char* text, WorldSession* self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char* text = "", Player* player = NULL);
+
+        uint32 pvp_ranks[HKRANKMAX];
 
         // Are we in the middle of a shutdown?
         bool IsShuttingDown() const
