@@ -19,7 +19,9 @@
 #define OREGONCORE_CHAT_H
 
 #include "SharedDefines.h"
+#include "Player.h"
 
+#include <vector>
 
 class ChatHandler;
 class WorldSession;
@@ -30,18 +32,19 @@ struct GameTele;
 
 class ChatCommand
 {
-    public:
-        const char*        Name;
-        uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
-        bool               AllowConsole;
-        bool (ChatHandler::*Handler)(const char* args);
-        std::string        Help;
-        ChatCommand*       ChildCommands;
+public:
+    const char *       Name;
+    uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
+    bool               AllowConsole;
+    bool(*Handler)(ChatHandler*, const char* args);
+    std::string        Help;
+    ChatCommand *      ChildCommands;
 };
 
 class ChatHandler
 {
     public:
+        WorldSession * GetSession() { return m_session; }
         explicit ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false) { }
         explicit ChatHandler(Player* player) : m_session(player->GetSession()) { }
         ~ChatHandler() {}
@@ -89,6 +92,7 @@ class ChatHandler
         virtual std::string GetNameLink() const { return GetNameLink(m_session->GetPlayer()); }
     protected:
         explicit ChatHandler() : m_session(NULL), sentErrorMessage(false) { }      // for CLI subclass
+        static bool SetDataForCommandInTable(ChatCommand *table, const char* text, uint32 security, std::string const& help, std::string const& fullcommand);
 
         bool hasStringAbbr(const char* name, const char* part);
 
