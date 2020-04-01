@@ -711,8 +711,8 @@ ChatCommand* ChatHandler::getCommandTable()
     if (load_command_table)
     {
         load_command_table = false;
-        //                                                       0    1        2    3
-        QueryResult_AutoPtr result = WorldDatabase.Query("SELECT name,security,help,groupAllowMask FROM command");
+
+        QueryResult_AutoPtr result = WorldDatabase.Query("SELECT name,security,help FROM command");
         if (result)
         {
             do
@@ -725,7 +725,6 @@ ChatCommand* ChatHandler::getCommandTable()
                     {
                         commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
                         commandTable[i].Help = fields[2].GetCppString();
-                        commandTable[i].GroupAllowMask = fields[3].GetUInt32();
                     }
                     if (commandTable[i].ChildCommands != NULL)
                     {
@@ -738,7 +737,6 @@ ChatCommand* ChatHandler::getCommandTable()
                             {
                                 ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
                                 ptable[j].Help = fields[2].GetCppString();
-                                ptable[j].GroupAllowMask = fields[3].GetUInt32();
                             }
                         }
                     }
@@ -762,9 +760,6 @@ const char* ChatHandler::GetOregonString(int32 entry) const
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
-    if (m_session->GetSecurityGroups() & cmd.GroupAllowMask)
-        return true;
-
     // check security level only for simple  command (without child commands)
     return m_session->GetSecurity() >= cmd.SecurityLevel;
 }
@@ -873,16 +868,16 @@ void ChatHandler::PSendSysMessage(const char* format, ...)
     SendSysMessage(str);
 }
 
-bool ChatHandler::ExecuteCommandInTables(std::vector<ChatCommand*>& tables, const char* text, const std::string& fullcmd, uint32 groupAllowMask = 0)
+bool ChatHandler::ExecuteCommandInTables(std::vector<ChatCommand*>& tables, const char* text, const std::string& fullcmd)
 {
     for (std::vector<ChatCommand*>::iterator it = tables.begin(); it != tables.end(); ++it)
-        if (ExecuteCommandInTable((*it), text, fullcmd, groupAllowMask))
+        if (ExecuteCommandInTable((*it), text, fullcmd))
             return true;
 
     return false;
 }
 
-bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, const std::string& fullcmd, uint32 groupAllowMask = 0)
+bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, const std::string& fullcmd)
 {
     char const* oldtext = text;
     std::string cmd = "";
@@ -903,7 +898,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, co
         // select subcommand from child commands list
         if (table[i].ChildCommands != NULL)
         {
-            if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd, groupAllowMask))
+            if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
             {
                 if (text && text[0] != '\0')
                     SendSysMessage(LANG_NO_SUBCMD);
