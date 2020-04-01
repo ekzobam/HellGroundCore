@@ -35,7 +35,7 @@ bool RegressionTestSuite::TestBreathingIssues()
     float o = .0f;
 
     // preapre dummy player
-    WorldSession session(0, NULL, SEC_PLAYER, false, true, 0, LOCALE_enUS);
+    WorldSession session(0, NULL, SEC_PLAYER, true, 0, LOCALE_enUS);
     Player player(&session);
 
     // taurens starts at map 1 -> our desired location
