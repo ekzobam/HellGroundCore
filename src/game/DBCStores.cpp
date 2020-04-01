@@ -539,7 +539,7 @@ void LoadDBCStores(const std::string& dataPath)
 
     // error checks
     if (bad_dbc_files.size() >= DBCFilesCount)
-        sLog.outFatal("\nIncorrect DataDir value in Oregond.conf or ALL required *.dbc files (%d) not found by path: %sdbc", DBCFilesCount, dataPath.c_str());
+        sLog.outFatal("\nIncorrect DataDir value in oregoncore.conf or ALL required *.dbc files (%d) not found by path: %sdbc", DBCFilesCount, dataPath.c_str());
     else if (!bad_dbc_files.empty())
     {
         std::string str;
