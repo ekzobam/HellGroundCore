@@ -814,7 +814,7 @@ std::vector<ChatCommand*> ScriptMgr::GetChatCommands()
     std::vector<ChatCommand*> table;
 
     FOR_SCRIPTS_RET(CommandScript, itr, end, table)
-        table.push_back(itr->second->GetCommands());
+        table.push_back(itr->second->OnGetCommands());
 
     return table;
 }
