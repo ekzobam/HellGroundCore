@@ -3515,6 +3515,10 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
             return;
 
         m_currentSpells[spellType] = NULL;
+        
+        // Remove global cooldown
+        if (GetTypeId() == TYPEID_PLAYER)
+            ToPlayer()->RemoveGlobalCooldown(spell->m_spellInfo);
 
         // send autorepeat cancel message for autorepeat spells
         if (spellType == CURRENT_AUTOREPEAT_SPELL)
