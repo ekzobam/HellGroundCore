@@ -19,10 +19,6 @@ addons:
       - zlib1g-dev
       - zip
       - unzip
-      - default-libmysqlclient-dev
-      - libncurses-dev
-      - doxygen
-      - libbz2-dev
 
 git:
   depth: 1
