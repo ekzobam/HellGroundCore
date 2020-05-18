@@ -897,7 +897,7 @@ public:
         return true;
     }
 
-    static bool HandleReloadMailLevelRewardCommand(const char* /*arg*/)
+    static bool HandleReloadMailLevelRewardCommand(ChatHandler* handler, const char* /*arg*/)
     {
         sLog.outString("Re-Loading Player level dependent mail rewards...");
         sObjectMgr.LoadMailLevelRewards();
