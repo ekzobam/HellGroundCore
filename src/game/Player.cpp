@@ -1051,8 +1051,11 @@ int32 Player::getMaxTimer(MirrorTimerType timer)
 {
     switch (timer)
     {
+      if(sWorld.getConfig(CONFIG_FATIGUE_TIMER_ONOFF))
+      {
         case FATIGUE_TIMER:
             return MINUTE * IN_MILLISECONDS;
+      }
         case BREATH_TIMER:
         {
             if (!IsAlive() || HasAuraType(SPELL_AURA_WATER_BREATHING) || GetSession()->GetSecurity() >= sWorld.getConfig(CONFIG_DISABLE_BREATHING))
@@ -1126,6 +1129,8 @@ void Player::HandleDrowning(uint32 time_diff)
     if (m_MirrorTimerFlags & UNDERWATER_INDARKWATER)
     {
         // Fatigue timer not activated - activate it
+      if(sWorld.getConfig(CONFIG_FATIGUE_TIMER_ONOFF))
+      {
         if (m_MirrorTimer[FATIGUE_TIMER] == DISABLED_MIRROR_TIMER)
         {
             m_MirrorTimer[FATIGUE_TIMER] = getMaxTimer(FATIGUE_TIMER);
@@ -1149,15 +1154,19 @@ void Player::HandleDrowning(uint32 time_diff)
             else if (!(m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER))
                 SendMirrorTimer(FATIGUE_TIMER, getMaxTimer(FATIGUE_TIMER), m_MirrorTimer[FATIGUE_TIMER], -1);
         }
+	  }
     }
     else if (m_MirrorTimer[FATIGUE_TIMER] != DISABLED_MIRROR_TIMER)       // Regen timer
     {
+      if(sWorld.getConfig(CONFIG_FATIGUE_TIMER_ONOFF))
+      {
         int32 DarkWaterTime = getMaxTimer(FATIGUE_TIMER);
         m_MirrorTimer[FATIGUE_TIMER] += 10 * time_diff;
         if (m_MirrorTimer[FATIGUE_TIMER] >= DarkWaterTime || !IsAlive())
             StopMirrorTimer(FATIGUE_TIMER);
         else if (m_MirrorTimerFlagsLast & UNDERWATER_INDARKWATER)
             SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
+      }
     }
 
     if (m_MirrorTimerFlags & (UNDERWATER_INLAVA /*| UNDERWATER_INSLIME*/) && !(_lastLiquid && _lastLiquid->SpellId))

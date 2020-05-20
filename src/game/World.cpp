@@ -1112,6 +1112,9 @@ void World::LoadConfigSettings(bool reload)
             pvp_ranks[i] = atoi(strtok (NULL, ","));
     }
 
+    // HellGroundCore
+    m_configs[CONFIG_FATIGUE_TIMER_ONOFF] = sConfig.GetBoolDefault("Fatigue.Enabled", true);
+
     // SQLUpdater
     m_configs[CONFIG_SQLUPDATER_ENABLED] = sConfig.GetBoolDefault("DatabaseUpdater.Enabled", false);
     // core
