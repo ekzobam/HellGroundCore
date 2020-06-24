@@ -115,6 +115,8 @@ public:
             { "gm_tickets",                     SEC_MODERATOR    , true,  &HandleGMTicketReloadCommand,                "" },
             { "account_referred",               SEC_ADMINISTRATOR, true,  &HandleRAFReloadCommand,                     "" },
             { "mail_level_reward",              SEC_ADMINISTRATOR, true,  &HandleReloadMailLevelRewardCommand,         "" },
+            { "gameobject_template",            SEC_ADMINISTRATOR, true,  &HandleReloadGameobjectTemplateCommand,      "" },
+            { "creature_template",              SEC_ADMINISTRATOR, true,  &HandleReloadCreatureTemplateCommand,        "" },
             { "",                               SEC_MODERATOR,     true,  &HandleReloadCommand,                        "" }
         };
 
@@ -902,6 +904,22 @@ public:
         sLog.outString("Re-Loading Player level dependent mail rewards...");
         sObjectMgr.LoadMailLevelRewards();
         handler->SendGlobalGMSysMessage("DB table `mail_level_reward` reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadGameobjectTemplateCommand(ChatHandler* handler, const char* /*arg*/)
+    {
+        sLog.outString( "WARNING: Re-loading gameobject_template" );
+        sObjectMgr.LoadGameobjectInfo();
+        handler->SendGlobalSysMessage("WARNING: DB table `gameobject_template` reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadCreatureTemplateCommand(ChatHandler* handler, const char* /*arg*/)
+    {
+        sLog.outString( "WARNING: Re-loading creature_template" );
+        sObjectMgr.LoadCreatureTemplates();
+        handler->SendGlobalSysMessage("WARNING: DB table `creature_template` reloaded.");
         return true;
     }
 
