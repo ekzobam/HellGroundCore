@@ -33,6 +33,7 @@
 #include "Language.h"
 #include "World.h"
 #include "DisableMgr.h"
+#include "ScriptMgr.h"
 
 void WorldSession::HandleBattlegroundHelloOpcode(WorldPacket& recv_data)
 {
@@ -433,6 +434,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode(WorldPacket& recv_data)
             && pitr->second.GroupInfo)
         {
             team = pitr->second.GroupInfo->Team;
+            sScriptMgr.OnBGAssignTeam(_player, bg, team);
             arenatype = pitr->second.GroupInfo->ArenaType;
             israted = pitr->second.GroupInfo->IsRated;
             rating = pitr->second.GroupInfo->ArenaTeamRating;
