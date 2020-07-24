@@ -39,6 +39,9 @@
  mob_inferno_infernal        100%    AI for Inferno (warlock spell)
  mob_explosive_sheep         100%    AI for Explosive Sheep
  npc_barmaid                 100%    Reponsive emotes for barmaids
+ npc_fire_elemental_guardian ___%    AI for Fire Elemental
+ npc_earth_elemental_guardian ___%   AI for Earth Elemental
+ npc_treant_guardian         ___%    AI for Treant Guardian
  EndContentData */
 
 #include "ScriptMgr.h"
@@ -2124,7 +2127,195 @@ public:
     }
 };
 
+/*######
+## npc_fire_elemental_guardian
+######*/
 
+enum ElementalGuardian
+{
+    // Fire Elemental
+    SPELL_FIRE_NOVA = 12470,
+    SPELL_FIRE_SHIELD = 20570,
+    SPELL_FIRE_BLAST = 8413,
+
+    // Earth Elemental
+    SPELL_ANGERED_EARTH = 36213
+};
+
+class npc_fire_elemental_guardian : public CreatureScript
+{
+public:
+    npc_fire_elemental_guardian() : CreatureScript("npc_fire_elemental_guardian") {}
+
+    struct npc_fire_elemental_guardianAI : public ScriptedAI
+    {
+        npc_fire_elemental_guardianAI(Creature* c) : ScriptedAI(c) { me->SetReactState(REACT_DEFENSIVE); }
+
+        uint32 FireNova_Timer;
+        uint32 FireShield_Timer;
+        uint32 FireBlast_Timer;
+
+        void Reset()
+        {
+            FireNova_Timer = urand(5000, 20000);
+            FireBlast_Timer = urand(10000, 15000);
+            FireShield_Timer = 2000;
+
+            me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_FIRE, true);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (Creature *pTotem = me->GetOwner()->ToCreature())
+            {
+                if (!pTotem->IsAlive())
+                {
+                    me->ForcedDespawn();
+                    return;
+                }
+            }
+
+            if (FireBlast_Timer <= uiDiff)
+            {
+                DoCast(me->GetVictim(), SPELL_FIRE_BLAST);
+                FireBlast_Timer = urand(10000, 15000);
+            }
+            else
+                FireBlast_Timer -= uiDiff;
+
+            if (FireNova_Timer <= uiDiff)
+            {
+                DoCast(me->GetVictim(), SPELL_FIRE_NOVA);
+                FireNova_Timer = urand(5000, 20000);
+            }
+            else
+                FireNova_Timer -= uiDiff;
+
+            if (FireShield_Timer <= uiDiff)
+            {
+                DoCast(me, SPELL_FIRE_SHIELD);
+                FireShield_Timer = 2000;
+            }
+            else
+                FireShield_Timer -= uiDiff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_fire_elemental_guardianAI(pCreature);
+    }
+};
+
+/*######
+## npc_earth_elemental_guardian
+######*/
+
+class npc_earth_elemental_guardian : public CreatureScript
+{
+public:
+    npc_earth_elemental_guardian() : CreatureScript("npc_earth_elemental_guardian") {}
+
+    struct npc_earth_elemental_guardianAI : public ScriptedAI
+    {
+        npc_earth_elemental_guardianAI(Creature* c) : ScriptedAI(c) { me->SetReactState(REACT_DEFENSIVE); }
+
+        uint32 AngeredEarth_Timer;
+
+        void Reset()
+        {
+            AngeredEarth_Timer = urand(5000, 15000);
+
+            me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_NATURE, true);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+       {
+            if (Creature *pTotem = me->GetOwner()->ToCreature())
+            {
+                if (!pTotem->IsAlive())
+                {
+                    me->ForcedDespawn();
+                    return;
+                }
+            }
+
+            if (AngeredEarth_Timer <= uiDiff)
+            {
+                DoCast(me->GetVictim(), SPELL_ANGERED_EARTH);
+                AngeredEarth_Timer = urand(5000, 15000);
+            }
+            else
+                AngeredEarth_Timer -= uiDiff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_earth_elemental_guardianAI(pCreature);
+    }
+};
+
+/*######
+## npc_treant_guardian
+######*/
+
+class npc_treant_guardian : public CreatureScript
+{
+public:
+    npc_treant_guardian() : CreatureScript("npc_treant_guardian") {}
+
+    struct npc_treant_guardianAI : public ScriptedAI
+    {
+        npc_treant_guardianAI(Creature* c) : ScriptedAI(c) { me->SetReactState(REACT_DEFENSIVE); }
+
+        uint32 Wrath_Timer;
+        uint32 HealingTouch_Timer;
+
+        void Reset()
+        {
+            Wrath_Timer = 5000;
+            HealingTouch_Timer = urand(5000, 10000);
+
+            me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_NATURE, true);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (Wrath_Timer <= uiDiff)
+            {
+                DoCast(me->GetVictim(), 21807); // SPELL_WRATH
+                Wrath_Timer = urand(10000, 15000);
+            }
+            else
+                Wrath_Timer -= uiDiff;
+
+            if (HealingTouch_Timer <= uiDiff)
+            {
+                if (Unit* pOwner = me->GetOwner())
+                {
+                    if (pOwner->GetHealth() * 100 / pOwner->GetMaxHealth() < 75)
+                    DoCast(pOwner, 23381); // SPELL_HEALING_TOUCH
+                }
+
+                HealingTouch_Timer = urand(5000, 10000);
+            }
+            else
+                HealingTouch_Timer -= uiDiff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_treant_guardianAI(pCreature);
+    }
+};
 
 void AddSC_npcs_special()
 {
@@ -2151,4 +2342,7 @@ void AddSC_npcs_special()
     new go_containment_coffer();
     new mob_inferno_infernal();
     new npc_barmaid();
+    new npc_fire_elemental_guardian();
+    new npc_earth_elemental_guardian();
+    new npc_treant_guardian();
 }
