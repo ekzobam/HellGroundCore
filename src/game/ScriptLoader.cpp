@@ -23,6 +23,9 @@
 //void AddSC_custom_example();
 //void AddSC_custom_gossip_codebox();
 //void AddSC_test();
+//Custom
+void AddSC_npc_spirit_of_competition();
+//End Custom
 void AddModuleScripts();
 //world
 void AddSC_areatrigger_scripts();
@@ -431,6 +434,9 @@ void AddScripts()
     //    AddSC_custom_example();
     //    AddSC_custom_gossip_codebox();
     //    AddSC_test();
+    //Custom
+    AddSC_npc_spirit_of_competition();
+	//End Custom
     AddModuleScripts();
     AddSC_areatrigger_scripts();
     AddSC_boss_emeriss();

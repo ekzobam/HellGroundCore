@@ -2349,6 +2349,10 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
     if (!IsInWorld())
         return nullptr;
 
+    // check for pet
+    if (Creature* pet = GetMap()->GetPet(guid))
+        return pet;
+
     if (IsInFlight())
         return nullptr;
 
@@ -12787,7 +12791,7 @@ void Player::PrepareQuestMenu(uint64 guid)
     QuestRelations* pObjectQR;
     QuestRelations* pObjectQIR;
 
-    if (Creature* pCreature = GetMap()->GetCreature(guid))
+    if (Creature* pCreature = GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_QUESTGIVER))
     {
         pObject = (Object*)pCreature;
         pObjectQR  = &sObjectMgr.mCreatureQuestRelations;
