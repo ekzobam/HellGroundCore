@@ -30,6 +30,7 @@
  npc_ogre_brute
  npc_bloodmaul_brutebane
  npc_light_orb_collector
+ npc_skyguard_khatie
  EndContentData */
 
 #include "ScriptMgr.h"
@@ -3234,6 +3235,61 @@ public:
     }
 };
 
+/*######
+## npc_skyguard_khatie
+######*/
+
+enum eKhatie
+{
+    FACTION_SHATARI_SKYGUARD = 1031,
+    GOSSIP_TEXT_ENTRY1 = 10907,
+    GOSSIP_TEXT_ENTRY2 = 11001,
+    GOSSIP_TEXT_ENTRY3 = 11002,
+    GOSSIP_TEXT_ENTRY4 = 11004
+};
+
+class npc_skyguard_khatie : CreatureScript
+{
+public:
+    npc_skyguard_khatie() : CreatureScript("npc_skyguard_khatie") {}
+
+    struct npc_skyguard_khatieAI : public ScriptedAI
+    {
+        npc_skyguard_khatieAI(Creature *c) : ScriptedAI(c) {}
+
+        bool GossipHello_npc_skyguard_khatie(Player* player, Creature* creature)
+        {
+            if (creature->IsQuestGiver())
+            player->PrepareQuestMenu(creature->GetGUID());
+
+            uint32 textEntry = 0;
+            switch (player->GetReputationRank(FACTION_SHATARI_SKYGUARD))
+            {
+                case REP_HONORED:
+                    textEntry = GOSSIP_TEXT_ENTRY3;
+                    break;
+                case REP_REVERED:
+                    textEntry = GOSSIP_TEXT_ENTRY2;
+                    break;
+                case REP_EXALTED:
+                    textEntry = GOSSIP_TEXT_ENTRY4;
+                    break;
+                default:
+                    textEntry = GOSSIP_TEXT_ENTRY1;
+                    break;
+            }
+
+            player->SEND_GOSSIP_MENU(textEntry, creature->GetGUID());
+            return true;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_skyguard_khatieAI(pCreature);
+    }
+};
+
 
 void AddSC_blades_edge_mountains()
 {
@@ -3287,5 +3343,6 @@ void AddSC_blades_edge_mountains()
     new npc_felburn_trigger();
     new npc_legion_flak_cannon();
     new npc_abyssal_flamebringer();
+    new npc_skyguard_khatie();
 
 }
