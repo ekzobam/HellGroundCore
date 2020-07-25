@@ -3300,11 +3300,9 @@ public:
 
         bool QuestComplete_npc_skyguard_khatie(Player* player, Creature* creature, Quest const *_Quest)
         {
-            sLog->outError("Call");
             if (_Quest->GetQuestId() == QUEST_WRANGLE_MORE_AETHER_RAYS ||
                 _Quest->GetQuestId() == QUEST_WRANGLE_SOME_AETHER_RAYS)
             {
-                sLog->outError("Call2");
                 creature->MonsterSay(RAND(SAY1, SAY2, SAY3, SAY4, SAY5, SAY6, SAY7), LANG_UNIVERSAL, 0);
             }
 

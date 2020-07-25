@@ -13416,7 +13416,7 @@ void Player::RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver,
         SendQuestReward(pQuest, XP, questGiver);
 
     if (Creature* questNpc = questGiver->ToCreature())
-        sScriptMgr.QuestComplete(this, questNpc, pQuest);
+        sScriptMgr.OnQuestComplete(this, questNpc, pQuest);
 
     // cast spells after mark quest complete (some spells have quest completed state requirements in spell_area data)
     if (pQuest->GetRewSpellCast() > 0)
