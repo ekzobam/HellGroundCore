@@ -44,6 +44,11 @@
 #include "GameEventMgr.h"
 #include "CreatureGroups.h"
 #include "MoveSpline.h"
+
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
 #include <fstream>
 
 void TrainerSpellData::Clear()
@@ -189,6 +194,12 @@ void Creature::AddToWorld()
         if (m_zoneScript)
             m_zoneScript->OnCreatureCreate(this, true);
 
+
+#ifdef ELUNA
+        sEluna->OnAddToWorld(this);
+#endif
+
+
         ObjectAccessor::Instance().AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
@@ -202,6 +213,12 @@ void Creature::RemoveFromWorld()
     {
         if (m_zoneScript)
             m_zoneScript->OnCreatureCreate(this, false);
+
+
+#ifdef ELUNA
+        sEluna->OnRemoveFromWorld(this);
+#endif
+
 
         if (m_formation)
             sFormationMgr.RemoveCreatureFromGroup(m_formation, this);
@@ -2316,6 +2333,13 @@ bool Creature::HasSpellCooldown(uint32 spell_id) const
 {
     CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spell_id);
     return (itr != m_CreatureSpellCooldowns.end() && itr->second > time(NULL)) || HasCategoryCooldown(spell_id);
+}
+
+uint32 Creature::GetCreatureSpellCooldownDelay(uint32 spellId) const
+{
+    CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spellId);
+    time_t t = time(NULL);
+    return uint32(itr != m_CreatureSpellCooldowns.end() && itr->second > t ? itr->second - t : 0);
 }
 
 bool Creature::IsInEvadeMode() const

@@ -52,6 +52,12 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#include "ElunaEventMgr.h"
+#endif
+
+
 #include <math.h>
 #include <array>
 
@@ -531,6 +537,12 @@ void Unit::Update(uint32 p_time)
         return;
 
     _UpdateSpells(p_time);
+	
+
+#ifdef ELUNA
+    elunaEvents->Update(p_time);
+#endif
+
 
     if (uint32 base_att = getAttackTimer(BASE_ATTACK))
         setAttackTimer(BASE_ATTACK, (p_time >= base_att ? 0 : base_att - p_time));
@@ -1210,6 +1222,26 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     DEBUG_LOG("DealDamageEnd returned %d damage", damage);
 
     return damage;
+}
+
+int32 Unit::DealHeal(Unit* pVictim, uint32 addhealth, SpellEntry const* spellProto, bool critical)
+{
+    int32 gain = pVictim->ModifyHealth(int32(addhealth));
+
+    Unit* unit = this;
+
+    if (GetTypeId() == TYPEID_UNIT && IsTotem())
+        unit = GetOwner();
+
+    unit->SendHealSpellLog(pVictim, spellProto->Id, addhealth, critical);
+
+    if (unit->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (Battleground* bg = ((Player*)unit)->GetBattleground())
+            bg->UpdatePlayerScore((Player*)unit, SCORE_HEALING_DONE, gain);
+    }
+
+    return gain;
 }
 
 void Unit::CastStop(uint32 except_spellid)
@@ -9494,6 +9526,14 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
         controlled->SetInCombatState(PvP, enemy);
     }
+
+
+#ifdef ELUNA
+    // used by eluna
+    if (GetTypeId() == TYPEID_PLAYER)
+        sEluna->OnPlayerEnterCombat(ToPlayer(), enemy);
+#endif
+
 }
 
 void Unit::ClearInCombat()
@@ -9523,6 +9563,14 @@ void Unit::ClearInCombat()
         else if (!isCharmed())
             return;
     }
+
+
+#ifdef ELUNA
+    // used by eluna
+    if (GetTypeId() == TYPEID_PLAYER)
+        sEluna->OnPlayerLeaveCombat(ToPlayer());
+#endif
+
 }
 
 void Unit::ClearInPetCombat()
@@ -12883,7 +12931,20 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
         }
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && ToCreature()->IsAIEnabled)
+		{
             ToCreature()->AI()->KilledUnit(victim);
+			
+
+#ifdef ELUNA
+            if (Creature* killer = ToCreature())
+            {
+                // used by eluna
+                if (Player* killed = victim->ToPlayer())
+                    sEluna->OnPlayerKilledByCreature(killer, killed);
+            }
+#endif
+
+        }
         else if (Guardian* pPet = GetGuardianPet())
             pPet->AI()->KilledUnit(victim);
 
@@ -12894,6 +12955,22 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
             victim->ToPlayer()->CombatStopWithPets(true);
             victim->ToPlayer()->DuelComplete(DUEL_INTERUPTED);
         }
+
+ 
+#ifdef ELUNA
+       if (Player* killed = victim->ToPlayer())
+        {
+            if (GetTypeId() == TYPEID_PLAYER)
+            {
+                if (Player* killer = ToPlayer())
+                {
+                    // used by eluna
+                    sEluna->OnPVPKill(killer, killed);
+                }
+            }
+        }
+#endif
+
     }
     else                                                // creature died
     {
@@ -12915,6 +12992,20 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
             ToCreature()->AI()->KilledUnit(victim);
         else if (Guardian* pPet = GetGuardianPet())
             pPet->AI()->KilledUnit(victim);
+		
+ 
+#ifdef ELUNA
+       if (GetTypeId() == TYPEID_PLAYER)
+        {
+            if (Creature* killed = victim->ToCreature())
+            {
+                // used by eluna
+                if (Player* killer = ToPlayer())
+                    sEluna->OnCreatureKill(killer, killed);
+            }
+        }
+#endif
+
 
         // Call creature just died function
         if (creature->IsAIEnabled)

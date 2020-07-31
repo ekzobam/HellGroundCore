@@ -46,6 +46,12 @@
 #include "Transports.h"
 #include "Log.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
+
+
 GameObject::GameObject() : WorldObject(false), m_model(nullptr), m_AI(nullptr)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
@@ -66,6 +72,9 @@ GameObject::GameObject() : WorldObject(false), m_model(nullptr), m_AI(nullptr)
     m_goData = nullptr;
 
     m_DBTableGuid = 0;
+
+    m_lootGroupRecipientId = 0;
+    m_lootRecipientGuid = 0;
 }
 
 GameObject::~GameObject()
@@ -129,6 +138,11 @@ void GameObject::AddToWorld()
         if (m_zoneScript)
             m_zoneScript->OnGameObjectCreate(this, true);
 
+
+#ifdef ELUNA
+        sEluna->OnAddToWorld(this);
+#endif
+
         ObjectAccessor::Instance().AddObject(this);
 
         // The state can be changed after GameObject::Create but before GameObject::AddToWorld
@@ -152,6 +166,12 @@ void GameObject::RemoveFromWorld()
     {
         if (m_zoneScript)
             m_zoneScript->OnGameObjectCreate(this, false);
+
+#ifdef ELUNA
+		
+        sEluna->OnRemoveFromWorld(this);
+#endif
+
 
         RemoveFromOwner();
 
@@ -240,6 +260,11 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float
 
     AIM_Initialize();
 
+
+#ifdef ELUNA
+    sEluna->OnSpawn(this);
+#endif
+
     return true;
 }
 
@@ -255,6 +280,13 @@ void GameObject::Update(uint32 diff)
         AI()->UpdateAI(diff);
     else if (!AIM_Initialize())
         sLog.outError("Could not initialize GameObjectAI");
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->UpdateAI(this, diff);
+#endif
+
+
 
     switch (m_lootState)
     {
@@ -519,6 +551,7 @@ void GameObject::Update(uint32 diff)
                 return;
             }
 
+            SetLootRecipient(NULL);
             SetLootState(GO_READY);
 
             //burning flags in some battlegrounds, if you find better condition, just add it
@@ -1515,6 +1548,11 @@ void GameObject::SetLootState(LootState s, Unit* unit)
     m_lootState = s;
 
     AI()->OnStateChanged(s, unit);
+
+#ifdef ELUNA
+    sEluna->OnLootStateChanged(this, s);
+#endif
+
     if (m_model)
     {
          bool collision = false;
@@ -1524,6 +1562,68 @@ void GameObject::SetLootState(LootState s, Unit* unit)
 
         EnableCollision(collision);
     }
+}
+
+Player* GameObject::GetOriginalLootRecipient() const
+{
+    return m_lootRecipientGuid ? ObjectAccessor::FindPlayer(m_lootRecipientGuid) : nullptr;
+}
+
+Group* GameObject::GetGroupLootRecipient() const
+{
+    // original recipient group if set and not disbanded
+    return m_lootGroupRecipientId ? sObjectMgr.GetGroupByLeader(m_lootGroupRecipientId) : nullptr;
+}
+
+Player* GameObject::GetLootRecipient() const
+{
+    // original recipient group if set and not disbanded
+    Group* group = GetGroupLootRecipient();
+
+    // original recipient player if online
+    Player* player = GetOriginalLootRecipient();
+
+    // if group not set or disbanded return original recipient player if any
+    if (!group)
+        return player;
+
+    // group case
+
+    // return player if it still be in original recipient group
+    if (player && player->GetGroup() == group)
+        return player;
+
+    // find any in group
+    for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        if (Player* newPlayer = itr->GetSource())
+            return newPlayer;
+
+    return nullptr;
+}
+
+void GameObject::SetLootRecipient(Unit* pUnit)
+{
+    // set the player whose group should receive the right
+    // to loot the gameobject after its used
+    // should be set to nullptr after the loot disappears
+
+    if (!pUnit)
+    {
+        m_lootRecipientGuid = 0;
+        m_lootGroupRecipientId = 0;
+        return;
+    }
+
+    Player* player = pUnit->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (!player)                                            // normal creature, no player involved
+        return;
+
+    // set player for non group case or if group will disbanded
+    m_lootRecipientGuid = player->GetGUID();
+
+    // set group for group existed case including if player will leave group at loot time
+    if (Group* group = player->GetGroup())
+        m_lootGroupRecipientId = group->GetLeaderGUID();
 }
 
 void GameObject::CastSpell(Unit* target, uint32 spellId, bool triggered /*= true*/)
@@ -1609,6 +1709,12 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
 void GameObject::SetGoState(GOState state)
 {
     SetUInt32Value(GAMEOBJECT_STATE, state);
+
+#ifdef ELUNA
+   sEluna->OnGameObjectStateChanged(this, state);
+#endif
+
+
     if (m_model && !IsTransport())
     {
         if (!IsInWorld())

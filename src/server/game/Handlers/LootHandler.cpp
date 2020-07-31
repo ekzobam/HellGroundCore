@@ -28,6 +28,10 @@
 #include "Group.h"
 #include "World.h"
 #include "Utilities/Util.h"
+#include "ScriptMgr.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
 
 void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recv_data)
 {
@@ -147,6 +151,13 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recv_data)
         --loot->unlootedCount;
 
         player->SendNewItem(newitem, uint32(item->count), false, false, true);
+
+        sScriptMgr.OnLootItem(player, newitem, item->count, lguid);
+
+#ifdef ELUNA
+        sEluna->OnLootItem(player, newitem, item->count, lguid);
+#endif
+
     }
     else
         player->SendEquipError(msg, NULL, NULL);
@@ -244,10 +255,26 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recv_data*/)
                 data << uint32(money_per_player);
 
                 (*i)->GetSession()->SendPacket(&data);
+
+                sScriptMgr.OnLootMoney((*i), money_per_player);
+#ifdef ELUNA
+                sEluna->OnLootMoney((*i), money_per_player);
+#endif   
+
             }
+
         }
         else
+        {
             player->ModifyMoney(pLoot->gold);
+
+            sScriptMgr.OnLootMoney(player, pLoot->gold);
+			
+#ifdef ELUNA
+            sEluna->OnLootMoney(player, pLoot->gold);
+#endif
+
+        }
 
         pLoot->gold = 0;
     }
@@ -537,6 +564,11 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recv_data)
     // now move item from loot to target inventory
     Item* newitem = target->StoreNewItem(dest, item.itemid, true, item.randomPropertyId);
     target->SendNewItem(newitem, uint32(item.count), false, false, true);
+
+#ifdef ELUNA
+    sEluna->OnLootItem(target, newitem, item.count, lootguid);
+#endif
+
 
     // mark as looted
     item.count = 0;

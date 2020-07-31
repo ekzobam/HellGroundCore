@@ -12,7 +12,51 @@ if (USE_COREPCH)
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-file(GLOB_RECURSE sources_localdir *.cpp *.h)
+file(GLOB sources_localdir *.cpp *.h)
+
+file(GLOB_RECURSE sources_game 
+  Accounts/*.*
+  AI/*.*
+  AuctionHouse/*.*
+  AuctionHouseBot/*.*
+  Battlegrounds/*.*
+  Chat/*.*
+  Combat/*.*
+  Conditions/*.*
+  DataStores/*.*
+  Entities/*.*
+  Events/*.*
+  Globals/*.*
+  Grids/*.*
+  Groups/*.*
+  Guilds/*.*
+  Handlers/*.*
+  Instances/*.*
+  Loot/*.*
+  Mails/*.*
+  Maps/*.*
+  Miscellaneous/*.*
+  Movement/*.*
+  OutdoorPvP/*.*
+  Pools/*.*
+  Quests/*.*
+  Reputation/*.*
+  Scripting/*.*
+  Server/*.*
+  Skills/*.*
+  Spells/*.*
+  Storages/*.*
+  Texts/*.*
+  Tickets/*.*
+  Tools/*.*
+  Warden/*.*
+  Weather/*.*
+  World/*.*
+)
+
+file(GLOB_RECURSE sources_luaengine
+ LuaEngine/*.*
+)
 
 # Create game-libary
 
@@ -26,8 +70,14 @@ endif()
 set(game_STAT_SRCS
   ${game_STAT_SRCS}
   ${sources_localdir}
+  ${sources_game}
 )
 
+if( ELUNA )
+  list(APPEND game_STAT_SRCS
+   ${sources_luaengine}
+  )
+endif()
   
 include_directories(
   ${CMAKE_BINARY_DIR}
@@ -35,6 +85,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/mersennetwister
   ${CMAKE_SOURCE_DIR}/dep/SFMT
   ${CMAKE_SOURCE_DIR}/dep/zlib
+
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/common/Collision
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
@@ -131,11 +182,33 @@ include_directories(
   ${OPENSSL_INCLUDE_DIR}
 )
 
+if( ELUNA )
+  include_directories(
+    ${CMAKE_SOURCE_DIR}/dep/lualib
+    ${CMAKE_SOURCE_DIR}/src/server/game/LuaEngine 
+  )
+endif()
+
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(game STATIC ${game_STAT_SRCS})
+if( ELUNA )
+  add_library(game STATIC ${game_STAT_SRCS} ${lua_STAT_SRCS})
+elseif( NOT ELUNA )
+  add_library(game STATIC ${game_STAT_SRCS})
+endif()
+
+
 
 add_dependencies(game revision.h)
+
+if( ELUNA )
+  add_dependencies(game lualib)
+
+  target_link_libraries(game
+   lualib
+  )
+endif()
+
 
 # Generate precompiled header
 if (USE_COREPCH)
@@ -146,4 +219,22 @@ if (USE_COREPCH)
   elseif (MSVC)
     add_native_precompiled_header(game ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders/gamePCH)
   endif()
+endif()
+
+if( ELUNA )
+
+  if( WIN32 )
+    add_custom_command(TARGET game
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/lua_scripts/extensions/
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/extensions ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/lua_scripts/extensions/
+    )
+  endif()
+  
+  if( UNIX )
+    install(DIRECTORY extensions DESTINATION bin/lua_scripts/)
+  elseif( WIN32 )
+    install(DIRECTORY extensions DESTINATION "${CMAKE_INSTALL_PREFIX}/lua_scripts/")
+  endif()
+ 
 endif()

@@ -35,6 +35,11 @@
 #include "WardenWin.h"
 #include "WardenMac.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
+
 // WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket* sock, uint32 sec, uint8 expansion, time_t mute_time, LocaleConstant locale) :
     LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_timeOutTime(0),
@@ -452,6 +457,12 @@ void WorldSession::LogoutPlayer(bool Save)
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetGUIDLow(), true);
         sSocialMgr.RemovePlayerSocial (_player->GetGUIDLow ());
 
+
+#ifdef ELUNA
+        ///- used by eluna
+        sEluna->OnLogout(_player);
+#endif
+
 		//! Call script hook before deletion
 		sScriptMgr.OnPlayerLogout(_player);
 
@@ -604,6 +615,12 @@ void WorldSession::InitWarden(BigNumber* K, std::string os)
 }
 void WorldSession::ExecuteOpcode(OpcodeHandler const& opHandle, WorldPacket* packet)
 {
+
+#ifdef ELUNA
+    if (!sEluna->OnPacketReceive(this, *packet))
+        return;
+#endif
+
     // need prevent do internal far teleports in handlers because some handlers do lot steps
     // or call code that can do far teleports in some conditions unexpectedly for generic way work code
     if (_player)

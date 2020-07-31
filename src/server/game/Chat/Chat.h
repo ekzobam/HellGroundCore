@@ -32,7 +32,7 @@ class ChatCommand
     typedef bool(*pHandler)(ChatHandler*, char const*);
 
 public:
-     ChatCommand(char const* name, uint32 securityLevel, bool allowConsole, pHandler handler, std::string help, std::vector<ChatCommand> childCommands = std::vector<ChatCommand>())
+    ChatCommand(char const* name, uint32 securityLevel, bool allowConsole, pHandler handler, std::string help, std::vector<ChatCommand> childCommands = std::vector<ChatCommand>())
         : Name(name), SecurityLevel(securityLevel), AllowConsole(allowConsole), Handler(handler), Help(std::move(help)), ChildCommands(std::move(childCommands)) { }
 
     const char* Name;
@@ -148,10 +148,11 @@ protected:
 
     static bool SetDataForCommandInTable(std::vector<ChatCommand> & table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand);
     bool ExecuteCommandInTable(std::vector<ChatCommand> const& table, const char* text, std::string const& fullcmd);
-
-
+    
     /**
      * Stores informations about a deleted character
+     
+    
 
     typedef std::list<DeletedInfo> DeletedInfoList;
     bool GetDeletedCharacterInfoList(DeletedInfoList& foundList, std::string searchString = "");

@@ -28,6 +28,11 @@
 #include "CreatureAIImpl.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
+#ifdef ELUNA
+#include "Player.h"
+#include "LuaEngine.h"
+#endif
+
 
 INSTANTIATE_SINGLETON_1(ScriptMgr);
 
@@ -577,6 +582,12 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex, Ite
     ASSERT(caster);
     ASSERT(target);
 
+
+#ifdef ELUNA
+    if (sEluna->OnDummyEffect(caster, spellId, (SpellEffIndex)effIndex, target))
+        return true;
+#endif
+
     GET_SCRIPT_RET(ItemScript, target->GetProto()->ScriptId, tmpscript, false);
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
@@ -585,6 +596,9 @@ void ScriptMgr::OnGossipSelect(Player* player, Item* item, uint32 sender, uint32
 {
     ASSERT(player);
     ASSERT(item);
+#ifdef ELUNA
+	sEluna->HandleGossipSelectOption(player, item, sender, action, "");
+#endif
 
     GET_SCRIPT(ItemScript, item->GetProto()->ScriptId, tmpscript);
     tmpscript->OnGossipSelect(player, item, sender, action);
@@ -594,6 +608,9 @@ void ScriptMgr::OnGossipSelectCode(Player* player, Item* item, uint32 sender, ui
 {
     ASSERT(player);
     ASSERT(item);
+#ifdef ELUNA
+	sEluna->HandleGossipSelectOption(player, item, sender, action, code);
+#endif
 
     GET_SCRIPT(ItemScript, item->GetProto()->ScriptId, tmpscript);
     tmpscript->OnGossipSelectCode(player, item, sender, action, code);
@@ -605,6 +622,12 @@ bool ScriptMgr::OnQuestAccept(Player* player, Item* item, Quest const* quest)
     ASSERT(quest);
     ASSERT(item);
 
+
+#ifdef ELUNA
+    if (sEluna->OnQuestAccept(player, item, quest))
+        return true;
+#endif
+
     GET_SCRIPT_RET(ItemScript, item->GetProto()->ScriptId, tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnQuestAccept(player, item, quest);
@@ -615,6 +638,11 @@ bool ScriptMgr::OnItemUse(Player* player, Item* item, SpellCastTargets const& ta
     ASSERT(player);
     ASSERT(item);
 
+#ifdef ELUNA
+    if (!sEluna->OnUse(player, item, targets))
+        return true;
+#endif
+
     GET_SCRIPT_RET(ItemScript, item->GetProto()->ScriptId, tmpscript, false);
     return tmpscript->OnUse(player, item, targets);
 }
@@ -624,14 +652,25 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex, Cre
     ASSERT(caster);
     ASSERT(target);
 
+
+#ifdef ELUNA
+    if (sEluna->OnDummyEffect(caster, spellId, (SpellEffIndex)effIndex, target))
+        return true;
+#endif
     GET_SCRIPT_RET(CreatureScript, target->GetScriptId(), tmpscript, false);
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
+
 
 bool ScriptMgr::OnGossipHello(Player* player, Creature* creature)
 {
     ASSERT(player);
     ASSERT(creature);
+#ifdef ELUNA
+    if (sEluna->OnGossipHello(player, creature))
+        return true;
+#endif
+
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
@@ -642,6 +681,13 @@ bool ScriptMgr::OnGossipSelect(Player* player, Creature* creature, uint32 sender
 {
     ASSERT(player);
     ASSERT(creature);
+
+
+#ifdef ELUNA
+    if (sEluna->OnGossipSelect(player, creature, sender, action))
+        return true;
+#endif
+
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelect(player, creature, sender, action);
@@ -653,6 +699,12 @@ bool ScriptMgr::OnGossipSelectCode(Player* player, Creature* creature, uint32 se
     ASSERT(creature);
     ASSERT(code);
 
+
+#ifdef ELUNA
+    if (sEluna->OnGossipSelectCode(player, creature, sender, action, code))
+        return true;
+#endif
+
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, creature, sender, action, code);
@@ -663,6 +715,13 @@ bool ScriptMgr::OnQuestAccept(Player* player, Creature* creature, Quest const* q
     ASSERT(player);
     ASSERT(creature);
     ASSERT(quest);
+
+#ifdef ELUNA
+
+    if (sEluna->OnQuestAccept(player, creature, quest))
+        return true;
+#endif
+
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
@@ -707,6 +766,12 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
     ASSERT(player);
     ASSERT(creature);
 
+
+#ifdef ELUNA
+    if (uint32 dialogId = sEluna->GetDialogStatus(player, creature))
+        return dialogId;
+#endif
+
     // TODO: 100 is a funny magic number to have hanging around here...
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, 100);
     player->PlayerTalkClass->ClearMenus();
@@ -716,6 +781,12 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
 CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 {
     ASSERT(creature);
+
+#ifdef ELUNA
+    if (CreatureAI* luaAI = sEluna->GetAI(creature))
+        return luaAI;
+#endif
+
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
     return tmpscript->GetAI(creature);
@@ -734,6 +805,16 @@ bool ScriptMgr::OnGossipHello(Player* player, GameObject* go)
     ASSERT(player);
     ASSERT(go);
 
+
+#ifdef ELUNA
+    if (sEluna->OnGossipHello(player, go))
+        return true;
+
+    if (sEluna->OnGameObjectUse(player, go))
+        return true;
+#endif
+
+
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipHello(player, go);
@@ -743,6 +824,12 @@ bool ScriptMgr::OnGossipSelect(Player* player, GameObject* go, uint32 sender, ui
 {
     ASSERT(player);
     ASSERT(go);
+
+#ifdef ELUNA
+    if (sEluna->OnGossipSelect(player, go, sender, action))
+        return true;
+#endif
+
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
@@ -755,6 +842,12 @@ bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender
     ASSERT(go);
     ASSERT(code);
 
+
+#ifdef ELUNA
+    if (sEluna->OnGossipSelectCode(player, go, sender, action, code))
+        return true;
+#endif
+
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
@@ -765,6 +858,12 @@ bool ScriptMgr::OnQuestAccept(Player* player, GameObject* go, Quest const* quest
     ASSERT(player);
     ASSERT(go);
     ASSERT(quest);
+
+#ifdef ELUNA
+    if (sEluna->OnQuestAccept(player, go, quest))
+        return true;
+#endif
+
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
@@ -798,6 +897,12 @@ uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
 {
     ASSERT(player);
     ASSERT(go);
+
+#ifdef ELUNA
+    if (uint32 dialogId = sEluna->GetDialogStatus(player, go))
+        return dialogId;
+#endif
+
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, 100);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnDialogStatus(player, go);
@@ -824,6 +929,12 @@ bool ScriptMgr::OnTrigger(Player* player, AreaTriggerEntry const* trigger)
 {
     ASSERT(player);
     ASSERT(trigger);
+
+#ifdef ELUNA
+    if (sEluna->OnAreaTrigger(player, trigger))
+        return true;
+#endif
+
 
     GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr.GetAreaTriggerScriptId(trigger->id), tmpscript, false);
     return tmpscript->OnTrigger(player, trigger);
@@ -1077,6 +1188,7 @@ MovementHandlerScript::MovementHandlerScript(const char* name)
     ScriptMgr::ScriptRegistry<MovementHandlerScript>::AddScript(this);
 }
 
+
 BGScript::BGScript(const char* name)
     : ScriptObject(name)
 {
@@ -1128,9 +1240,29 @@ void ScriptMgr::OnGroupDisband(Group* group, Player* leader)
 
 
 // Player
+void ScriptMgr::OnLootMoney(Player* player, uint32 amount)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnLootMoney(player, amount);
+}
+
 void ScriptMgr::OnBeforePlayerUpdate(Player* player, uint32 p_time)
 {
     FOREACH_SCRIPT(PlayerScript)->OnBeforeUpdate(player, p_time);
+}
+
+void ScriptMgr::OnLootItem(Player* player, Item* item, uint32 count, uint64 lootGUID)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnLootItem(player, item, count, lootGUID);
+}
+
+void ScriptMgr::OnCreateItem(Player* player, Item* item, uint32 count)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnCreateItem(player, item, count);
+}
+
+void ScriptMgr::OnQuestRewardItem(Player* player, Item* item, uint32 count)
+{
+    FOREACH_SCRIPT(PlayerScript)->OnQuestRewardItem(player, item, count);
 }
 
 void ScriptMgr::OnPlayerLoadFromDB(Player* player)
@@ -1290,11 +1422,17 @@ void ScriptMgr::OnQuestStatusChange(Player* player, uint32 questId)
 
 void ScriptMgr::OnGossipSelect(Player* player, uint32 menu_id, uint32 sender, uint32 action)
 {
+#ifdef ELUNA
+	sEluna->HandleGossipSelectOption(player, menu_id, sender, action, "");
+#endif
     FOREACH_SCRIPT(PlayerScript)->OnGossipSelect(player, menu_id, sender, action);
 }
 
 void ScriptMgr::OnGossipSelectCode(Player* player, uint32 menu_id, uint32 sender, uint32 action, const char* code)
 {
+#ifdef ELUNA
+	sEluna->HandleGossipSelectOption(player, menu_id, sender, action, code);
+#endif
     FOREACH_SCRIPT(PlayerScript)->OnGossipSelectCode(player, menu_id, sender, action, code);
 }
 

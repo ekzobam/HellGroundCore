@@ -31,6 +31,11 @@
 #include "Utilities/Util.h"
 #include "ScriptMgr.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
+
 Group::Group()
 {
     m_leaderGuid        = 0;
@@ -123,7 +128,14 @@ bool Group::Create(const uint64& guid, const char* name)
     if (!isBGGroup()) CharacterDatabase.CommitTransaction();
 
     sScriptMgr.OnGroupCreate(leader->GetGroup(), leader);
-    
+   
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnCreate(this, m_leaderGuid, m_groupType);
+
+#endif
+
     return true;
 }
 
@@ -230,6 +242,13 @@ bool Group::AddInvite(Player* player, bool isLeader)
     if (!isLeader)
         sScriptMgr.OnGroupInviteMember(this, player);
 
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnInviteMember(this, player->GetGUID());
+#endif
+
+
     return true;
 }
 
@@ -303,6 +322,13 @@ bool Group::AddMember(const uint64& guid, const char* name)
         }
         player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
         UpdatePlayerOutOfRange(player);
+
+
+#ifdef ELUNA
+        // used by eluna
+        sEluna->OnAddMember(this, player->GetGUID());
+#endif
+
     }
 
     return true;
@@ -356,7 +382,13 @@ uint32 Group::RemoveMember(const uint64& guid, const RemoveMethod& method /* = G
     else
         Disband(true);
 
-    
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnRemoveMember(this, guid, method); // Kicker and Reason not a part of Mangos, implement?
+#endif
+
+   
     return m_memberSlots.size();
 }
 
@@ -373,6 +405,13 @@ void Group::ChangeLeader(const uint64& guid)
 
     if (oldLeader && newLeader)
         sScriptMgr.OnGroupChangeLeader(this, oldLeader, newLeader);
+
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnChangeLeader(this, newLeader->GetGUID(), oldLeader->GetGUID());
+#endif
+
 
     WorldPacket data(SMSG_GROUP_SET_LEADER, slot->name.size() + 1);
     data << slot->name;
@@ -441,6 +480,13 @@ void Group::Disband(bool hideDestroy)
         CharacterDatabase.CommitTransaction();
         ResetInstances(INSTANCE_RESET_GROUP_DISBAND, NULL);
     }
+
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnDisband(this);
+#endif
+
 
     m_leaderGuid = 0;
     m_leaderName = "";

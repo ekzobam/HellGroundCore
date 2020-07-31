@@ -35,6 +35,11 @@
 #include "ArenaTeam.h"
 #include "DisableMgr.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
+
 INSTANTIATE_SINGLETON_1(BattlegroundMgr);
 
 /*********************************************************/
@@ -187,8 +192,10 @@ void BattlegroundQueue::AddPlayer(Player* plr, GroupQueueInfo* ginfo)
         uint32 MinPlayers = bg->GetMinPlayersPerTeam();
         uint32 MaxPlayers = bg->GetMaxPlayersPerTeam();
 
-        uint32 qHorde = 0;
+
+        uint32 qHorde = 0; // bg->GetPlayersCountByTeam(HORDE);
         uint32 qAlliance = 0;
+
 
         for (std::map<uint64, PlayerQueueInfo>::iterator itr = m_QueuedPlayers[queue_id].begin(); itr != m_QueuedPlayers[queue_id].end(); ++itr)
         {
@@ -1480,6 +1487,11 @@ uint32 BattlegroundMgr::CreateBattleground(uint32 bgTypeId, uint32 MinPlayersPer
 
     //add Battleground instance to FreeSlotQueue (.back() will return the template!)
     bg->AddToBGFreeSlotQueue();
+
+
+#ifdef ELUNA
+    sEluna->OnBGCreate(bg, (BattlegroundTypeId)bgTypeId, bg->GetInstanceID());
+#endif
 
     // do NOT add to update list, since this is a template battleground!
 

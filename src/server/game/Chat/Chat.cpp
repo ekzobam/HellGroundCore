@@ -33,6 +33,11 @@
 #include "MapManager.h"
 #include "SpellMgr.h"
 #include "ScriptMgr.h"
+
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
 #include "InstanceSaveMgr.h"
 
 bool ChatHandler::load_command_table = true;
@@ -245,6 +250,11 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
 
             return true;
         }
+
+#ifdef ELUNA
+        if (!sEluna->OnCommand(m_session ? m_session->GetPlayer() : NULL, fullcmd.c_str()))
+            return true;
+#endif
 
         // must be available and have handler
         if (!table[i].Handler || !isAvailable(table[i]))

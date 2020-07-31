@@ -263,6 +263,9 @@ enum WorldConfigs
     CONFIG_CREATURE_PICKPOCKET_REFILL,
     CONFIG_SQLUPDATER_ENABLED,
     CONFIG_HEALTH_IN_PERCENTS,
+#ifdef ELUNA
+	CONFIG_BOOL_ELUNA_ENABLED,
+#endif
     CONFIG_WARSONG_TIMER,
     CONFIG_CREATEUPDATE_FILE,
     CONFIG_CONSOLE_RESTART_TIMER,
@@ -650,7 +653,7 @@ class World
         /*Module Configs*/
         void LoadModuleConfig();
         bool GetModuleBoolConfig(std::string config, bool value);
-        std::string GetModuleStringConfig(std::string config);
+        std::string GetModuleStringConfig(std::string config, std::string value);
         int32 GetModuleIntConfig(std::string conf, uint32 value);
 
         void LoadConfigSettings(bool reload = false);

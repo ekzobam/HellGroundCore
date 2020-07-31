@@ -39,6 +39,10 @@
 #include "OutdoorPvPMgr.h"
 #include "packet_builder.h"
 #include "MapManager.h"
+#ifdef ELUNA
+#include "LuaEngine.h"
+#include "ElunaEventMgr.h"
+#endif
 
 uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
@@ -80,6 +84,11 @@ Object::Object()
 
 WorldObject::~WorldObject()
 {
+#ifdef ELUNA
+    delete elunaEvents;
+    elunaEvents = NULL;
+#endif
+
     // this may happen because there are many !create/delete
     if (IsWorldObject() && m_currMap)
     {
@@ -90,6 +99,13 @@ WorldObject::~WorldObject()
         }
         ResetMap();
     }
+}
+
+void WorldObject::Update(uint32 time_diff)
+{
+#ifdef ELUNA
+    elunaEvents->Update(time_diff);
+#endif
 }
 
 Object::~Object()
@@ -794,6 +810,13 @@ void Object::SetUInt32Value(uint16 index, uint32 value)
     }
 }
 
+void Object::UpdateUInt32Value(uint16 index, uint32 value)
+{
+    ASSERT(index < m_valuesCount || PrintIndexError(index, true));
+
+    m_uint32Values[index] = value;
+}
+
 void Object::SetUInt64Value(uint16 index, const uint64& value)
 {
     ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
@@ -1085,6 +1108,9 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 
 WorldObject::WorldObject(bool isWorldObject):
       WorldLocation()
+#ifdef ELUNA
+    , elunaEvents(NULL)
+#endif
     , m_groupLootTimer(0)
     , lootingGroupLeaderGUID(0)
     , m_isWorldObject(isWorldObject)
@@ -1978,6 +2004,13 @@ void WorldObject::SetMap(Map* map)
     m_InstanceId = map->GetInstanceId();
     if (IsWorldObject())
         m_currMap->AddWorldObject(this);
+
+#ifdef ELUNA
+    delete elunaEvents;
+    // On multithread replace this with a pointer to map's Eluna pointer stored in a map
+    elunaEvents = new ElunaEventProcessor(&Eluna::GEluna, this);
+#endif
+
 }
 
 void WorldObject::ResetMap()
@@ -1987,6 +2020,12 @@ void WorldObject::ResetMap()
     if (IsWorldObject())
         m_currMap->RemoveWorldObject(this);
     m_currMap = NULL;
+
+#ifdef ELUNA
+    delete elunaEvents;
+    elunaEvents = NULL;
+#endif
+
     //maybe not for corpse
     //m_mapId = 0;
     //m_InstanceId = 0;
@@ -2095,7 +2134,6 @@ TempSummon* Map::SummonCreature(uint32 entry, const Position& pos, SummonPropert
     summon->InitStats(duration);
     AddToMap(summon->ToCreature());
     summon->InitSummon();
-
     return summon;
 }
 
@@ -2104,7 +2142,14 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position& pos, TempS
     if (Map* map = FindMap())
     {
         if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL, NULL, spwtype))
+        {
+#ifdef ELUNA
+            if (Unit* summoner = ToUnit())
+                sEluna->OnSummoned(summon, summoner);
+#endif
+
             return summon;
+        }
     }
 
     return NULL;

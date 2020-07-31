@@ -70,6 +70,8 @@ class Database
 
         bool ExecuteFile(const char* file);
 
+        bool _Query(const char* sql, MYSQL_RES** pResult, MYSQL_FIELD** pFields, uint64* pRowCount, uint32* pFieldCount);
+
         // Async queries and query holders, implemented in DatabaseImpl.h
 
         // Query / member
@@ -120,10 +122,10 @@ class Database
         bool DirectPExecute(const char* format, ...) ATTR_PRINTF(2, 3);
         bool DirectExecute(PreparedStatement* stmt, PreparedValues& values, va_list* args);
 
-        // Writes SQL commands to a LOG file (see oregoncore.conf "LogSQL")
+        // Writes SQL commands to a LOG file (see Oregond.conf "LogSQL")
         bool PExecuteLog(const char* format, ...) ATTR_PRINTF(2, 3);
 
-        // Writes SQL commands to a LOG file (see oregoncore.conf "LogSQL")
+        // Writes SQL commands to a LOG file (see Oregond.conf "LogSQL")
         // but runs via PreparedStatements
         bool PreparedExecuteLog(const char* sql, const char* format = NULL, ...);
         bool PreparedExecuteLog(const char* sql, PreparedValues& values);
@@ -169,7 +171,6 @@ class Database
         static size_t db_count;
 
         bool _TransactionCmd(const char* sql);
-        bool _Query(const char* sql, MYSQL_RES** pResult, MYSQL_FIELD** pFields, uint64* pRowCount, uint32* pFieldCount);
 
         PreparedStatement* _GetOrMakePreparedStatement(const char* query, const char* format, PreparedValues* values);
         bool _ExecutePreparedStatement(PreparedStatement* ps, PreparedValues* values, va_list* args, bool resultset);

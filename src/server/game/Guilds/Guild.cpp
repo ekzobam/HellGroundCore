@@ -26,6 +26,11 @@
 #include "Utilities/Util.h"
 #include "Language.h"
 
+#ifdef ELUNA
+#include "LuaEngine.h"
+#endif
+
+
 Guild::Guild()
 {
     m_Id = 0;
@@ -103,6 +108,13 @@ bool Guild::Create(Player* leader, std::string gname)
 
     CreateDefaultGuildRanks(lSession->GetSessionDbLocaleIndex());
 
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnCreate(this, leader, gname.c_str());
+
+#endif
+
     return AddMember(m_LeaderGuid, (uint32)GR_GUILDMASTER);
 }
 
@@ -116,6 +128,73 @@ void Guild::CreateDefaultGuildRanks(int locale_idx)
     CreateRank(sObjectMgr.GetOregonString(LANG_GUILD_VETERAN, locale_idx),  GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
     CreateRank(sObjectMgr.GetOregonString(LANG_GUILD_MEMBER, locale_idx),   GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
     CreateRank(sObjectMgr.GetOregonString(LANG_GUILD_INITIATE, locale_idx), GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
+}
+
+void Guild::HandleInviteMember(WorldSession* session, std::string const& name)
+{
+    //sLog.outDebug("WORLD: Received CMSG_GUILD_INVITE");
+
+    std::string plname;
+    Player* playerS = session->GetPlayer();
+
+    Player* player = NULL;
+    player = ObjectAccessor::Instance().FindPlayerByName(name.c_str());
+    if (!player)
+    {
+        session->SendGuildCommandResult(GUILD_INVITE_S, name, ERR_GUILD_PLAYER_NOT_FOUND_S);
+        return;
+    }
+
+    Guild* guild = sObjectMgr.GetGuildById(playerS->GetGuildId());
+    if (!guild)
+    {
+        session->SendGuildCommandResult(GUILD_CREATE_S, "", ERR_GUILD_PLAYER_NOT_IN_GUILD);
+        return;
+    }
+
+    // OK result but not send invite
+    if (player->GetSocial()->HasIgnore(playerS->GetGUIDLow()))
+        return;
+
+    // not let enemies sign guild charter
+    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != playerS->GetTeam())
+    {
+        session->SendGuildCommandResult(GUILD_INVITE_S, name, ERR_GUILD_NOT_ALLIED);
+        return;
+    }
+
+    if (player->GetGuildId())
+    {
+        plname = player->GetName();
+        session->SendGuildCommandResult(GUILD_INVITE_S, plname, ERR_ALREADY_IN_GUILD_S);
+        return;
+    }
+
+    if (player->GetGuildIdInvited())
+    {
+        plname = player->GetName();
+        session->SendGuildCommandResult(GUILD_INVITE_S, plname, ERR_ALREADY_INVITED_TO_GUILD_S);
+        return;
+    }
+
+    if (!guild->HasRankRight(playerS->GetRank(), GR_RIGHT_INVITE))
+    {
+        session->SendGuildCommandResult(GUILD_INVITE_S, "", ERR_GUILD_PERMISSIONS);
+        return;
+    }
+
+    sLog.outDebug("Player %s Invited %s to Join his Guild", playerS->GetName(), name.c_str());
+
+    player->SetGuildIdInvited(playerS->GetGuildId());
+    // Put record into guildlog
+    guild->LogGuildEvent(GUILD_EVENT_LOG_INVITE_PLAYER, playerS->GetGUIDLow(), player->GetGUIDLow(), 0);
+
+    WorldPacket data(SMSG_GUILD_INVITE, (8 + 10));          // guess size
+    data << playerS->GetName();
+    data << guild->GetName();
+    player->GetSession()->SendPacket(&data);
+
+    //sLog.outDebug("WORLD: Sent (SMSG_GUILD_INVITE)");
 }
 
 bool Guild::AddMember(uint64 plGuid, uint32 plRank)
@@ -169,6 +248,13 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
 
     UpdateAccountsNumber();
 
+ 
+#ifdef ELUNA
+   // used by eluna
+    sEluna->OnAddMember(this, pl, newmember.RankId);
+
+#endif
+
     return true;
 }
 
@@ -179,6 +265,13 @@ void Guild::SetMOTD(std::string motd)
     // motd now can be used for encoding to DB
     CharacterDatabase.escape_string(motd);
     CharacterDatabase.PExecute("UPDATE guild SET motd='%s' WHERE guildid='%u'", motd.c_str(), m_Id);
+
+#ifdef ELUNA
+
+    // used by eluna
+    sEluna->OnMOTDChanged(this, motd);
+#endif
+
 }
 
 void Guild::SetGINFO(std::string ginfo)
@@ -188,6 +281,13 @@ void Guild::SetGINFO(std::string ginfo)
     // ginfo now can be used for encoding to DB
     CharacterDatabase.escape_string(ginfo);
     CharacterDatabase.PExecute("UPDATE guild SET info='%s' WHERE guildid='%u'", ginfo.c_str(), m_Id);
+
+#ifdef ELUNA
+
+    // used by eluna
+    sEluna->OnInfoChanged(this, ginfo);
+#endif
+
 }
 
 bool Guild::LoadGuildFromDB(QueryResult_AutoPtr guildDataResult)
@@ -534,6 +634,13 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
     }
 
     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", GUID_LOPART(guid));
+
+#ifdef ELUNA
+
+    // used by eluna
+    sEluna->OnRemoveMember(this, player, isDisbanding); // IsKicked not a part of Mangos, implement?
+#endif
+
 }
 
 void Guild::ChangeRank(uint64 guid, uint32 newRank)
@@ -732,6 +839,14 @@ void Guild::Disband()
     CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid = '%u'", m_Id);
     CharacterDatabase.PExecute("DELETE FROM guild_eventlog WHERE guildid = '%u'", m_Id);
     CharacterDatabase.CommitTransaction();
+
+ 
+#ifdef ELUNA
+   // used by eluna
+    sEluna->OnDisband(this);
+
+#endif
+
     sObjectMgr.RemoveGuild(m_Id);
 }
 
@@ -1338,6 +1453,16 @@ bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid)
         CharacterDatabase.PExecute("UPDATE guild_member SET BankRemMoney='%u' WHERE guildid='%u' AND guid='%u'",
                                    itr->second.BankRemMoney, m_Id, LowGuid);
     }
+
+
+#ifdef ELUNA
+    Player* player = sObjectMgr.GetPlayer(MAKE_NEW_GUID(LowGuid, 0, HIGHGUID_PLAYER));
+
+    // used by eluna
+    sEluna->OnMemberWitdrawMoney(this, player, amount, false); // IsRepair not a part of Mangos, implement?
+
+#endif
+
     return true;
 }
 
@@ -1679,6 +1804,14 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         }
         m_GuildBankEventLog_Item[TabId].push_back(NewEvent);
     }
+
+
+#ifdef ELUNA
+    // used by eluna
+    sEluna->OnBankEvent(this, LogEntry, TabId, PlayerGuidLow, ItemOrMoney, ItemStackCount, DestTabId);
+
+#endif
+
     CharacterDatabase.PExecute("INSERT INTO guild_bank_eventlog (guildid,LogGuid,LogEntry,TabId,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES ('%u','%u','%u','%u','%u','%u','%u','%u','" UI64FMTD "')",
                                m_Id, NewEvent.LogGuid, uint32(NewEvent.LogEntry), uint32(TabId), NewEvent.PlayerGuid, NewEvent.ItemOrMoney, uint32(NewEvent.ItemStackCount), uint32(NewEvent.DestTabId), NewEvent.TimeStamp);
 }

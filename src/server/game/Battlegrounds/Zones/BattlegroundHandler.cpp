@@ -433,6 +433,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode(WorldPacket& recv_data)
         if (pitr != sBattlegroundMgr.m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end()
             && pitr->second.GroupInfo)
         {
+
             team = pitr->second.GroupInfo->Team;
             sScriptMgr.OnBGAssignTeam(_player, bg, team);
             arenatype = pitr->second.GroupInfo->ArenaType;
@@ -474,7 +475,7 @@ void WorldSession::HandleBattlegroundPlayerPortOpcode(WorldPacket& recv_data)
                 _player->CleanupAfterTaxiFlight();
             }
             queueSlot = _player->GetBattlegroundQueueIndex(bgQueueTypeId);
-            sBattlegroundMgr.BuildBattlegroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_IN_PROGRESS, 0, bg->GetStartTime());
+            sBattlegroundMgr.BuildBattlegroundStatusPacket(&data, bg, _player->GetTeam() != team ? team : _player->GetTeam() , queueSlot, STATUS_IN_PROGRESS, 0, bg->GetStartTime());
             _player->GetSession()->SendPacket(&data);
             // remove battleground queue status from BGmgr
             sBattlegroundMgr.m_BattlegroundQueues[bgQueueTypeId].RemovePlayer(_player->GetGUID(), false);

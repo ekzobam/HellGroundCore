@@ -27,6 +27,7 @@
 
 #define MAXGROUPSIZE 5
 #define MAXRAIDSIZE 40
+#define MAX_RAID_SUBGROUPS (MAXRAIDSIZE / MAXGROUPSIZE)
 #define TARGETICONCOUNT 8
 
 enum RollVote
@@ -525,3 +526,4 @@ class Group
 
 #define sScriptMgr Oregon::Singleton<ScriptMgr>::Instance()
 #endif
+
