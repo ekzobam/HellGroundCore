@@ -1730,10 +1730,7 @@ class Player : public Unit, public GridObject<Player>
         {
             return GetUInt32Value(PLAYER_CHARACTER_POINTS1);
         }
-        void SetFreeTalentPoints(uint32 points)
-        {
-            SetUInt32Value(PLAYER_CHARACTER_POINTS1, points);
-        }
+        void SetFreeTalentPoints(uint32 points);
         bool ResetTalents(bool no_cost = false);
         uint32 ResetTalentsCost() const;
         void InitTalentForLevel();
