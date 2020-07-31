@@ -2167,12 +2167,6 @@ Console.RestartTimer = 10
 ###############################################################################
 #    HELLGROUND CUSTOM
 #
-#    Fake.WHO.List
-#        Add fake players to fill in WHO LIST (who is online list, "O" button) if there is less then
-#        49 real players online (need to set online=2 in character database in order to work)
-#        Default: 0 (disabled)
-#                 1 (enabled)
-#
 #    Antifarm Honor
 #        Check in PVP. If IP is equally - is no honor give.
 #        Default: 0 - disabled
@@ -2223,9 +2217,6 @@ Console.RestartTimer = 10
 #                 0 (disabled)
 #
 ###############################################################################
-Fake.Who.List = 0
-Fake.Who.Online.Interval = 5
-Fake.Who.LevelUp.Interval = 2
 Antifarm.Honor = 0
 GMIsland.PlayersAccess.Enable = 1
 GMIsland.Ban.Enable = 0

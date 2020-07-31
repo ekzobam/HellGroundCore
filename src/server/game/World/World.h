@@ -270,9 +270,6 @@ enum WorldConfigs
     CONFIG_CREATEUPDATE_FILE,
     CONFIG_CONSOLE_RESTART_TIMER,
     CONFIG_BG_XP_FOR_KILL,
-    CONFIG_FAKE_WHO_LIST,
-    CONFIG_FAKE_WHO_ONLINE_INTERVAL,
-    CONFIG_FAKE_WHO_LEVELUP_INTERVAL,
     CONFIG_ANTIFARM_HONOR,
     CONFIG_GMISLAND_PLAYERS_ACCESS_ENABLE,
     CONFIG_GMISLAND_BAN_ENABLE,
@@ -510,7 +507,6 @@ class World
         WorldSession* FindSession(uint32 id) const;
         void AddSession(WorldSession* s);
         void SendAutoBroadcast();
-        uint32 GetFakeActiveSessionCount();
         void InvalidatePlayerDataToAllClient(uint64 guid) const;
         bool RemoveSession(uint32 id); 
         // Get the number of current active sessions

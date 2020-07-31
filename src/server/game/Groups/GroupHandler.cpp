@@ -29,8 +29,6 @@
 #include "MapManager.h"
 #include "SocialMgr.h"
 #include "Utilities/Util.h"
-#include "Chat.h"
-#include "Language.h"
 
 /* differeces from off:
     -you can uninvite yourself - is is useful
@@ -85,16 +83,8 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recv_data)
     // player trying to invite himself (most likely cheating)
     if (player == GetPlayer())
     {
-        if (sWorld.getConfig(CONFIG_FAKE_WHO_LIST))
-        {
-            ChatHandler(_player->GetSession()).PSendSysMessage(LANG_FAKE_NOT_DISTURB);
-            return;
-        }
-        else
-        {
-            SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
-            return;
-        }
+        SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
+        return;
     }
 
     // restrict invite to GMs
