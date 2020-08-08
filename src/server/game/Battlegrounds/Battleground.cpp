@@ -1182,7 +1182,8 @@ void Battleground::StartBattleground()
     SetLastResurrectTime(0);
     if (m_IsRated)
         sLog.outArena("Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
-    for (BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+
+    for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
         if (Player *plr = sObjectMgr.GetPlayer(itr->first))
             plr->BuildGladdyUpdate();
 
